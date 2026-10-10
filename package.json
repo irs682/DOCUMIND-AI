@@ -1,0 +1,22 @@
+{
+  "name": "documind-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DOCUMIND-AI - Intelligent Document Research & Knowledge Platform",
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "concurrently -n \"backend,frontend,ai-service\" -c \"cyan,magenta,yellow\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \".\\.venv\\Scripts\\python.exe -m uvicorn main:app --port 8000 --app-dir ai-service\"",
+    "dev:web": "concurrently -n \"backend,frontend\" -c \"cyan,magenta\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:ai": ".\\.venv\\Scripts\\python.exe -m uvicorn main:app --port 8000 --app-dir ai-service",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

@@ -1,0 +1,12 @@
+python-interpreter-path = "c:\\Users\\PMLS\\Desktop\\DOCUMIND-AI\\.venv\\Scripts\\python.exe"
+
+search-path = [
+    "ai-service",
+    "ai-service/app",
+    ".venv/Lib/site-packages"
+]
+
+project-excludes = [
+    "**/__pyrefly_virtual__/**",
+    "**/node_modules/**"
+]

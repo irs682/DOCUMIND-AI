@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+*/node_modules/
+package-lock.json
+
+# Python Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+*/__pycache__/
+*.pyo
+*.pyd
+
+# Environment Variables & Secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# Build Outputs
+dist/
+build/
+*/dist/
+*/build/
+
+# Uploads & Temporary files
+uploads/
+backend/uploads/
+*/uploads/
+tmp/
+temp/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Testing & Coverage
+coverage/
+.nyc_output/

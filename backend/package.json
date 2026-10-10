@@ -1,0 +1,28 @@
+{
+    "name": "documind-ai",
+    "version": "1.0.0",
+    "description": "DOCUMIND-AI Backend Server - AI-Powered Document Intelligence, RAG, and Vector Search",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js",
+        "seed": "node seeds/index.js",
+        "seed:admin": "node seeds/seedAdmin.js",
+        "test:extraction": "node scripts/test_information_extraction.js"
+    },
+    "dependencies": {
+        "@qdrant/js-client-rest": "^1.19.0",
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.6.1",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^7.6.3",
+        "multer": "^1.4.5-lts.1",
+        "openai": "^7.4.0",
+        "pdf-parse": "^2.4.5"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
