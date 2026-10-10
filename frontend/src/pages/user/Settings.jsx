@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Sliders, Key, Database, Cpu, Save, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Sliders, Key, Database, Cpu, Save, CheckCircle2, RefreshCw, Sun, Moon } from 'lucide-react';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
+import { useThemeContext } from '../../context/ThemeContext';
 
 const Settings = () => {
+  const { theme, setTheme } = useThemeContext();
   const [apiKey, setApiKey] = useState('sk-documind-prod-948275918234');
   const [defaultModel, setDefaultModel] = useState('gpt-4o');
   const [chunkSize, setChunkSize] = useState(512);
@@ -21,19 +23,64 @@ const Settings = () => {
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
           <Sliders size={16} />
           <span>System & RAG Configuration</span>
         </div>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100 sm:text-3xl">
           Application Settings
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Manage API keys, default LLM model selection, vector chunking parameters, and index properties.
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Manage workspace appearance, API credentials, default LLM model selection, and vector chunking parameters.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
+        {/* Appearance & Theme Section */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <Sun size={16} className="text-amber-500" />
+            <span>Workspace Appearance</span>
+          </h3>
+
+          <div className="grid grid-cols-2 gap-4 max-w-md">
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              className={`p-4 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                theme === 'light'
+                  ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 font-bold ring-2 ring-indigo-500/20 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
+              }`}
+            >
+              <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-amber-500 shadow-2xs">
+                <Sun size={18} />
+              </div>
+              <div>
+                <div className="text-xs font-bold">Light Mode</div>
+                <div className="text-[10px] text-slate-400">Clean & high-contrast</div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              className={`p-4 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                theme === 'dark'
+                  ? 'border-indigo-500 bg-indigo-950/60 text-indigo-200 font-bold ring-2 ring-indigo-500/20 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
+              }`}
+            >
+              <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-indigo-400 shadow-2xs">
+                <Moon size={18} />
+              </div>
+              <div>
+                <div className="text-xs font-bold">Dark Mode</div>
+                <div className="text-[10px] text-slate-400">Deep slate & focused</div>
+              </div>
+            </button>
+          </div>
+        </div>
         {/* API Key Section */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-3 flex items-center gap-2">

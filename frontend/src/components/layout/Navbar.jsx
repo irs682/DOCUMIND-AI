@@ -208,6 +208,22 @@ const Navbar = ({ onOpenCommandPalette, onOpenNewProject }) => {
                       <span>Admin Console</span>
                     </Link>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleTheme();
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {theme === 'dark' ? <Moon size={15} className="text-amber-400" /> : <Sun size={15} className="text-indigo-500" />}
+                      <span>Appearance</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full capitalize">
+                      {theme}
+                    </span>
+                  </button>
                 </div>
 
                 <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
