@@ -1,8 +1,12 @@
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
+import Navbar from '../components/layout/Navbar';
+import Sidebar from '../components/layout/Sidebar';
+import CommandPalette from '../components/common/CommandPalette';
+import NewProjectModal from '../components/common/NewProjectModal';
 import { useAuthContext } from '../context/AuthContext';
-import { Menu, X, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, LogOut } from 'lucide-react';
 import { getAvatarUrl } from '../utils/avatar';
 
 const publicNavItems = [
@@ -14,50 +18,71 @@ const publicNavItems = [
   { label: 'Contact', to: '/contact' },
 ];
 
-const dashboardNavItems = [
-  { label: 'Dashboard', to: '/dashboard' },
-  { label: 'Documents', to: '/documents' },
-  { label: 'Compare', to: '/compare' },
-  { label: 'Projects', to: '/projects' },
-  { label: 'Knowledge Bases', to: '/knowledge-bases' },
-  { label: 'Search', to: '/search' },
-  { label: 'AI Chat', to: '/ai-chat' },
-  { label: 'Research', to: '/research' },
-  { label: 'Agents', to: '/agents' },
-  { label: 'Analytics', to: '/analytics' },
-];
-
 const MainLayout = () => {
   const { user, logout } = useAuthContext();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Determine if user is on a public or dashboard page
-  const isPublicPage = ['/features', '/pricing', '/faq', '/about', '/contact', '/', '/home'].includes(location.pathname);
-  const isChatPage = ['/chat', '/ai-chat', '/projects'].some((prefix) => location.pathname.startsWith(prefix));
-  const navItems = isPublicPage && !user ? publicNavItems : dashboardNavItems;
+  // Collapsible sidebar state & modals
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('documind_sidebar_collapsed') === 'true';
+  });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
-  return (
-    <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 shrink-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-lg">
+  // Keyboard shortcut listener for Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('documind_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+
+  // Check if current route is a public marketing page
+  const isPublicMarketingRoute = [
+    '/',
+    '/home',
+    '/features',
+    '/pricing',
+    '/faq',
+    '/about',
+    '/contact',
+  ].includes(location.pathname);
+
+  // If public visitor without login or on landing page, display marketing header & layout
+  if (isPublicMarketingRoute && !user) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
+        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+          <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between gap-4">
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold text-lg">
                 📄
               </div>
               <div className="hidden sm:block">
-                <span className="text-lg font-bold text-slate-900">DOCUMIND</span>
-                <span className="text-lg font-bold text-indigo-600">-AI</span>
+                <span className="text-lg font-bold text-slate-900 dark:text-slate-100">DOCUMIND</span>
+                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">-AI</span>
               </div>
             </Link>
 
             <nav className="hidden gap-1 md:flex">
-              {navItems.map((item) => (
+              {publicNavItems.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className="px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:text-indigo-600 hover:bg-slate-50 transition"
+                  className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 rounded-lg hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                 >
                   {item.label}
                 </Link>
@@ -65,122 +90,84 @@ const MainLayout = () => {
             </nav>
 
             <div className="flex items-center gap-3">
-              {user ? (
-                <>
-                  {user.role === 'admin' && (
-                    <Link
-                      to="/admin"
-                      className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
-                    >
-                      🛡️ Admin Console
-                    </Link>
-                  )}
-                  <Link
-                    to="/profile"
-                    title="Edit profile & preferences"
-                    className="hidden sm:flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-white text-xs font-bold overflow-hidden shadow-xs">
-                      {user.avatar ? (
-                        <img src={getAvatarUrl(user.avatar)} alt={user.name} className="h-full w-full object-cover" />
-                      ) : (
-                        user.name?.charAt(0) || 'U'
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-slate-700 max-w-[130px] truncate">{user.name}</span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
-                  >
-                    <LogOut size={16} />
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="hidden sm:inline-block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="hidden sm:inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition shadow-sm"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-
-              {/* Mobile menu toggle */}
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden transition"
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition"
               >
-                {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="px-4 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-xs"
+              >
+                Get Started
+              </Link>
             </div>
+          </div>
+        </header>
+
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Authenticated App Shell (Dashboard, Research Workspace, Documents, etc.)
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex">
+      {/* Collapsible App Sidebar */}
+      <Sidebar
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+      />
+
+      {/* Main Content Area */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ease-in-out ${
+          isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
+        }`}
+      >
+        {/* Top Navbar */}
+        <div className="flex items-center">
+          {/* Mobile hamburger button */}
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="md:hidden p-3 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+            aria-label="Open navigation menu"
+          >
+            <Menu size={22} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <Navbar
+              onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+              onOpenNewProject={() => setIsNewProjectModalOpen(true)}
+            />
           </div>
         </div>
 
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="border-t bg-white px-6 py-4 md:hidden">
-            <div className="flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              {user ? (
-                <>
-                  {user.role === 'admin' && (
-                    <Link
-                      to="/admin"
-                      className="rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-2.5 text-sm font-semibold text-indigo-700"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      🛡️ Admin Console
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => {
-                      logout();
-                      setMobileOpen(false);
-                    }}
-                    className="mt-2 rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <div className="mt-2 flex gap-2">
-                  <Link to="/login" className="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-center text-sm font-medium text-slate-700">
-                    Login
-                  </Link>
-                  <Link to="/register" className="flex-1 rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white">
-                    Get Started
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </header>
+        {/* Dynamic Page Outlet with smooth entrance transition */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in animate-slide-up">
+          <Outlet />
+        </main>
+      </div>
 
-      <main className={isChatPage ? 'h-[calc(100vh-4.25rem)] overflow-hidden px-2 sm:px-4 py-2' : 'mx-auto max-w-7xl px-6 py-8'}>
-        <Outlet />
-      </main>
+      {/* Global Command Palette (Ctrl+K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onOpenNewProject={() => setIsNewProjectModalOpen(true)}
+      />
 
-      {!isChatPage && <Footer />}
+      {/* Global New Project Modal */}
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+      />
     </div>
   );
 };
