@@ -8,6 +8,7 @@ const ChatSession = require('../models/ChatSession');
 const InformationExtraction = require('../models/InformationExtraction');
 const { processDocument, reprocessDocument } = require('../services/documentPipelineService');
 const { deleteDocumentVectors } = require('../services/vectorService');
+const storageService = require('../services/storageService');
 
 /**
  * POST /api/documents/upload
@@ -39,6 +40,27 @@ const uploadDocument = async (req, res) => {
     const kbId = knowledgeBase?._id || (knowledgeBaseId && mongoose.Types.ObjectId.isValid(knowledgeBaseId) ? knowledgeBaseId : null);
     const formattedSize = `${(req.file.size / (1024 * 1024)).toFixed(1)} MB`;
 
+    let storageKey = null;
+    let storageProvider = storageService.getStorageProvider();
+    let storageUrl = null;
+
+    if (storageProvider === 'supabase') {
+      try {
+        const fileBuf = fs.readFileSync(req.file.path);
+        const uploaded = await storageService.uploadFile(fileBuf, {
+          filename: req.file.originalname,
+          mimeType: req.file.mimetype,
+          userId: req.user._id,
+          folder: 'documents',
+        });
+        storageKey = uploaded.storageKey;
+        storageUrl = uploaded.signedUrl;
+      } catch (uploadErr) {
+        console.warn(`[STORAGE] Supabase upload error: ${uploadErr.message}. Operating with local copy.`);
+        storageProvider = 'local';
+      }
+    }
+
     // ── Step 1: Save to MongoDB immediately with status 'uploaded' ──
     const savedDocument = await Document.create({
       name: req.file.originalname,
@@ -48,6 +70,9 @@ const uploadDocument = async (req, res) => {
       stored_filename: req.file.filename,
       filePath: req.file.path,
       file_path: req.file.path,
+      storageKey,
+      storageProvider,
+      storageUrl,
       mimeType: req.file.mimetype,
       mime_type: req.file.mimetype,
       size: req.file.size,
@@ -155,6 +180,9 @@ const deleteDocument = async (req, res) => {
     await ChatSession.updateMany({ user: req.user._id }, { $pull: { selectedDocumentIds: id } }).catch(() => {});
     await InformationExtraction.deleteMany({ documentId: id, user: req.user._id }).catch(() => {});
 
+    if (deleted.storageKey) {
+      await storageService.deleteFile(deleted.storageKey).catch(() => {});
+    }
     if (deleted.filePath && fs.existsSync(deleted.filePath)) {
       try {
         fs.unlinkSync(deleted.filePath);

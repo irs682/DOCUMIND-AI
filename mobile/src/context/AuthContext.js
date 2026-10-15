@@ -22,15 +22,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [apiBaseUrl, setApiBaseUrl] = useState('http://localhost:5000/api');
+  const defaultUrl = (typeof process !== 'undefined' && (process.env.EXPO_PUBLIC_API_URL || process.env.API_URL)) || 'http://localhost:5000/api';
+  const [apiBaseUrl, setApiBaseUrl] = useState(defaultUrl);
 
   // Initialize API client & restore session
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Load custom or saved API URL (e.g. for LAN testing on physical phone)
+        // Load custom or saved API URL (e.g. for LAN testing or production on physical phone)
         const savedUrl = await AsyncStorage.getItem(API_URL_KEY);
-        const resolvedUrl = savedUrl || 'http://localhost:5000/api';
+        const resolvedUrl = savedUrl || defaultUrl;
         setApiBaseUrl(resolvedUrl);
 
         configureApiClient({

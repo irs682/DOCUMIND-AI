@@ -165,7 +165,7 @@ Grounding instructions:
           headers: {
             Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
-            "HTTP-Referer": process.env.OPENROUTER_HTTP_REFERER || "http://localhost:5173",
+            "HTTP-Referer": process.env.OPENROUTER_HTTP_REFERER || process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://documind-ai.netlify.app",
             "X-Title": process.env.OPENROUTER_APP_NAME || "DOCUMIND-AI",
           },
           body: JSON.stringify({

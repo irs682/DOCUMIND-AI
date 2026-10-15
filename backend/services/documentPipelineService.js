@@ -9,6 +9,7 @@ const { createEmbeddings } = require('./embeddingService');
 const { storeDocumentChunks, deleteDocumentVectors } = require('./vectorService');
 const { classifyDocument } = require('./classificationService');
 const { enrichFiguresWithVision } = require('./visionService');
+const storageService = require('./storageService');
 
 // In-memory set to prevent concurrent pipeline executions on the same document
 const activeProcessing = new Set();
@@ -72,15 +73,28 @@ const processDocument = async (documentId, options = {}) => {
 
     console.log(`[UPLOAD] file=${fileName} document_id=${docIdStr}`);
 
-    // Resolve file path on disk
+    // Resolve file path on disk or retrieve from storage provider
     let resolvedPath = filePath;
     if (resolvedPath && !fs.existsSync(resolvedPath)) {
       const candidate = path.join(__dirname, '..', resolvedPath);
       if (fs.existsSync(candidate)) resolvedPath = candidate;
     }
 
+    if ((!resolvedPath || !fs.existsSync(resolvedPath)) && (doc.storageKey || doc.filePath)) {
+      try {
+        const fileBuffer = await storageService.getFileBuffer(doc.storageKey || doc.filePath);
+        const tempDir = path.join(__dirname, '../uploads/temp');
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+        const tempPath = path.join(tempDir, `${docIdStr}-${fileName}`);
+        fs.writeFileSync(tempPath, fileBuffer);
+        resolvedPath = tempPath;
+      } catch (hydrateErr) {
+        console.warn(`[PIPELINE] Remote storage retrieval failed: ${hydrateErr.message}`);
+      }
+    }
+
     if (!resolvedPath || !fs.existsSync(resolvedPath)) {
-      const missingErr = new Error(`DOCUMENT_EXTRACTION_FAILED: Original file "${fileName}" not found on server disk`);
+      const missingErr = new Error(`DOCUMENT_EXTRACTION_FAILED: Original file "${fileName}" not found on server disk or storage`);
       missingErr.code = 'EXTRACTION_FAILED';
       throw missingErr;
     }

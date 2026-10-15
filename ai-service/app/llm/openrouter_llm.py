@@ -63,7 +63,9 @@ class OpenRouterLLM(BaseLLM):
         )
         http_referer = (
             settings.OPENROUTER_HTTP_REFERER
-            or os.getenv("OPENROUTER_HTTP_REFERER", "http://localhost:5173")
+            or os.getenv("OPENROUTER_HTTP_REFERER")
+            or settings.FRONTEND_URL
+            or os.getenv("FRONTEND_URL", "https://documind-ai.netlify.app")
         )
 
         if app_name:

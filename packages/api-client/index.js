@@ -4,7 +4,9 @@
  * Handles authenticated requests, token injection, caching, and cross-platform uploads
  */
 
-let apiBaseUrl = 'http://localhost:5000/api';
+let apiBaseUrl = (typeof process !== 'undefined' && (process.env?.API_URL || process.env?.VITE_API_URL)) ||
+  (typeof window !== 'undefined' && (window.__API_URL__ || (window.location?.origin ? `${window.location.origin}/api` : ''))) ||
+  'http://localhost:5000/api';
 let tokenProvider = () => {
   if (typeof window !== 'undefined' && window.localStorage) {
     return window.localStorage.getItem('token');

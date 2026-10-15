@@ -20,6 +20,10 @@ const getBaseUrl = () => {
   return (process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/$/, "");
 };
 
+const getReferer = () => {
+  return process.env.OPENROUTER_HTTP_REFERER || process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://documind-ai.netlify.app";
+};
+
 /**
  * Get the configured main OpenRouter model from environment.
  * Fails clearly if not configured instead of silently selecting a deprecated model.
@@ -81,7 +85,7 @@ const callOpenRouter = async ({
     const headers = {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": process.env.OPENROUTER_HTTP_REFERER || "http://localhost:5173",
+      "HTTP-Referer": getReferer(),
       "X-Title": process.env.OPENROUTER_APP_NAME || "DOCUMIND-AI",
     };
 
@@ -193,7 +197,7 @@ const streamOpenRouter = async ({
     const headers = {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": process.env.OPENROUTER_HTTP_REFERER || "http://localhost:5173",
+      "HTTP-Referer": getReferer(),
       "X-Title": process.env.OPENROUTER_APP_NAME || "DOCUMIND-AI",
     };
 
@@ -395,7 +399,7 @@ const listOpenRouterModels = async () => {
   const response = await fetch(`${baseUrl}/models`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": process.env.OPENROUTER_HTTP_REFERER || "http://localhost:5173",
+      "HTTP-Referer": getReferer(),
       "X-Title": process.env.OPENROUTER_APP_NAME || "DOCUMIND-AI",
     },
   });
@@ -432,7 +436,7 @@ const validateOpenRouterConfiguration = async () => {
   const response = await fetch(`${baseUrl}/models`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": process.env.OPENROUTER_HTTP_REFERER || "http://localhost:5173",
+      "HTTP-Referer": getReferer(),
       "X-Title": process.env.OPENROUTER_APP_NAME || "DOCUMIND-AI",
     },
   });

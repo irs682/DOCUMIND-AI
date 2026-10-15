@@ -9,11 +9,13 @@ const { validateTextQuality, isUsableDocumentText, cleanDocumentText } = require
  * Locate the active Python executable, preferring project virtual environment.
  */
 const getPythonCommand = () => {
+  if (process.env.PYTHON_PATH && fs.existsSync(process.env.PYTHON_PATH)) return process.env.PYTHON_PATH;
+  if (process.env.PYTHON_BIN) return process.env.PYTHON_BIN;
   const venvPython = path.resolve(__dirname, "../../.venv/Scripts/python.exe");
   if (fs.existsSync(venvPython)) return venvPython;
   const posixVenv = path.resolve(__dirname, "../../.venv/bin/python");
   if (fs.existsSync(posixVenv)) return posixVenv;
-  return "python";
+  return process.platform === "win32" ? "python" : "python3";
 };
 
 /**
@@ -210,6 +212,45 @@ const loadDocument = async (filePath, originalName = "") => {
         fullText: cleaned,
         metadata: { totalCharacters: cleaned.length },
       };
+    }
+  }
+
+  if (ext === ".pdf") {
+    try {
+      const pdfParse = require("pdf-parse");
+      const dataBuffer = fs.readFileSync(resolvedPath);
+      const pdfData = await pdfParse(dataBuffer);
+      const text = cleanDocumentText(pdfData.text || "");
+      if (text.length > 0) {
+        return {
+          documentId: path.basename(resolvedPath, ext),
+          fileName,
+          fileType: "pdf",
+          pageCount: pdfData.numpages || 1,
+          totalPages: pdfData.numpages || 1,
+          pages: [
+            {
+              pageNumber: 1,
+              text,
+              tables: [],
+              section: "General",
+              isReference: false,
+              extractionMethod: "node-native",
+              ocrUsed: false,
+              ocrConfidence: 1.0,
+              qualityScore: 0.85,
+            },
+          ],
+          tables: [],
+          figures: [],
+          evidenceObjects: [],
+          diagnostics: { textBlocks: 1, tablesDetected: 0, tablesParsed: 0, figuresDetected: 0, figuresProcessed: 0, ocrPages: 0, failedObjects: 0, evidenceObjectsCount: 0 },
+          fullText: text,
+          metadata: { totalCharacters: text.length, numPages: pdfData.numpages },
+        };
+      }
+    } catch (pdfErr) {
+      console.warn(`[DocumentLoader] pdf-parse fallback error: ${pdfErr.message}`);
     }
   }
 

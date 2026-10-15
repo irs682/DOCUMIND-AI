@@ -114,6 +114,30 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ---------------------------------------------------------
+# CORS Middleware
+# ---------------------------------------------------------
+from fastapi.middleware.cors import CORSMiddleware
+
+allowed_origins = [
+    settings.FRONTEND_URL,
+    settings.NODE_BACKEND_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+]
+# Strip trailing slashes and filter empties
+allowed_origins = list({orig.rstrip("/") for orig in allowed_origins if orig})
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins if settings.APP_ENV == "production" else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ---------------------------------------------------------
 # API Routers

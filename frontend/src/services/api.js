@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Use Vite's same-origin proxy in development; production deployments can
-// provide an absolute API URL through VITE_API_BASE_URL.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Support VITE_API_URL and VITE_API_BASE_URL with graceful fallback to /api for Vite proxy
+const rawApi = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = rawApi === '/api' ? '/api' : (rawApi.endsWith('/api') ? rawApi : `${rawApi.replace(/\/$/, '')}/api`);
 
 const api = axios.create({
   baseURL: API_BASE_URL,

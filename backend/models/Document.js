@@ -50,6 +50,19 @@ const documentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    storageKey: {
+      type: String,
+      default: '',
+    },
+    storageProvider: {
+      type: String,
+      enum: ['local', 'supabase', 's3'],
+      default: 'local',
+    },
+    storageUrl: {
+      type: String,
+      default: '',
+    },
     mimeType: {
       type: String,
       default: 'application/pdf',

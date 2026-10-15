@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/admin";
+const rawApi = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+const normalizedApi = rawApi === '/api' ? '/api' : (rawApi.endsWith('/api') ? rawApi : `${rawApi.replace(/\/$/, '')}/api`);
+const BASE_URL = `${normalizedApi}/admin`;
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");

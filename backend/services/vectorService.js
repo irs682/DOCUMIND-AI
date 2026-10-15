@@ -6,7 +6,7 @@ const qdrant = new QdrantClient({
   url: process.env.QDRANT_URL || "http://127.0.0.1:6333",
   apiKey: process.env.QDRANT_API_KEY || undefined,
   checkCompatibility: false,
-  timeout: 3000,
+  timeout: Number(process.env.QDRANT_TIMEOUT_MS) || 10000,
 });
 
 const COLLECTION_NAME = process.env.QDRANT_COLLECTION || "documind_documents";

@@ -37,7 +37,8 @@ export const chatApi = {
       onError,
     }
   ) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+    const rawApi = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
+    const API_BASE_URL = rawApi === '/api' ? '/api' : (rawApi.endsWith('/api') ? rawApi : `${rawApi.replace(/\/$/, '')}/api`);
     const token = localStorage.getItem('token');
     const endpoint = conversationId
       ? `${API_BASE_URL}/chat/conversations/${conversationId}/messages/stream`
