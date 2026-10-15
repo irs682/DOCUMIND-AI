@@ -14,14 +14,14 @@ const ActivityChart = ({ data = mockData, title = 'Weekly RAG Activity' }) => {
   const maxVal = Math.max(...data.map((d) => d.queries), 350);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">{title}</h4>
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</h4>
         <div className="flex items-center gap-4 text-xs font-semibold">
-          <span className="flex items-center gap-1.5 text-indigo-600">
+          <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
             <span className="h-2.5 w-2.5 rounded-full bg-indigo-600 inline-block" /> AI Queries
           </span>
-          <span className="flex items-center gap-1.5 text-purple-600">
+          <span className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
             <span className="h-2.5 w-2.5 rounded-full bg-purple-600 inline-block" /> Docs Indexed
           </span>
         </div>
@@ -41,17 +41,17 @@ const ActivityChart = ({ data = mockData, title = 'Weekly RAG Activity' }) => {
                   style={{ height: `${queryHeight}%` }}
                   className="w-1/2 max-w-[18px] rounded-t-md bg-indigo-600 group-hover:bg-indigo-700 transition-all relative"
                 >
-                  <span className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-0.5 px-1.5 rounded pointer-events-none font-bold">
+                  <span className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-800 border border-transparent dark:border-slate-700 text-white text-[10px] py-0.5 px-1.5 rounded pointer-events-none font-bold">
                     {item.queries}
                   </span>
                 </div>
                 {/* Doc Bar */}
                 <div
                   style={{ height: `${docHeight}%` }}
-                  className="w-1/2 max-w-[18px] rounded-t-md bg-purple-400 group-hover:bg-purple-500 transition-all"
+                  className="w-1/2 max-w-[18px] rounded-t-md bg-purple-400 dark:bg-purple-500 group-hover:bg-purple-500 dark:group-hover:bg-purple-400 transition-all"
                 />
               </div>
-              <span className="text-[11px] font-semibold text-slate-500">{item.day}</span>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{item.day}</span>
             </div>
           );
         })}

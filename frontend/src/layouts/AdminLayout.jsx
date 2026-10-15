@@ -68,7 +68,7 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block">{sidebar}</div>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -82,30 +82,32 @@ const AdminLayout = () => {
         </div>
       )}
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200/80 bg-white/90 px-5 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 px-5 backdrop-blur lg:px-8 transition-colors">
           <div className="flex items-center gap-3">
-            <button aria-label="Open navigation" onClick={() => setOpen(true)} className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden">
+            <button aria-label="Open navigation" onClick={() => setOpen(true)} className="rounded-lg p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden">
               <Menu size={21} />
             </button>
             <div>
-              <p className="text-sm font-bold text-slate-900">Admin console</p>
-              <p className="hidden text-xs text-slate-500 sm:block">Manage your intelligent workspace</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Admin console</p>
+              <p className="hidden text-xs text-slate-500 dark:text-slate-400 sm:block">Manage your intelligent workspace</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
               to="/dashboard"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-sm"
             >
               ← User App
             </Link>
-            <button aria-label="Notifications" className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+
+
+            <button aria-label="Notifications" className="relative rounded-lg p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
               <Bell size={19} />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-rose-500" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white dark:border-slate-900 bg-rose-500" />
             </button>
-            <div className="hidden h-7 w-px bg-slate-200 sm:block" />
-            <Link to="/profile" title="View Profile" className="flex items-center gap-2 rounded-xl p-1.5 pr-2 text-left hover:bg-slate-100 transition">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-700 overflow-hidden shadow-xs">
+            <div className="hidden h-7 w-px bg-slate-200 dark:bg-slate-800 sm:block" />
+            <Link to="/profile" title="View Profile" className="flex items-center gap-2 rounded-xl p-1.5 pr-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-100 dark:bg-indigo-950 text-xs font-bold text-indigo-700 dark:text-indigo-400 overflow-hidden shadow-xs">
                 {user?.avatar ? (
                   <img src={getAvatarUrl(user.avatar)} alt={name} className="h-full w-full object-cover" />
                 ) : (
@@ -113,12 +115,12 @@ const AdminLayout = () => {
                 )}
               </span>
               <span className="hidden sm:block">
-                <span className="block text-xs font-bold text-slate-800">{name}</span>
-                <span className="block text-[11px] text-slate-500">Administrator</span>
+                <span className="block text-xs font-bold text-slate-800 dark:text-slate-200">{name}</span>
+                <span className="block text-[11px] text-slate-500 dark:text-slate-400">Administrator</span>
               </span>
               <ChevronDown className="hidden text-slate-400 sm:block" size={15} />
             </Link>
-            <button onClick={handleLogout} title="Sign out" className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600">
+            <button onClick={handleLogout} title="Sign out" className="rounded-lg p-2 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
               <LogOut size={19} />
             </button>
           </div>

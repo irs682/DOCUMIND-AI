@@ -31,13 +31,13 @@ const Documents = () => {
   const [extractionError, setExtractionError] = useState('');
 
   // ── Load documents & KBs from backend ──────────────────────────────────────────
-  const loadDocuments = useCallback(async () => {
+  const loadDocuments = useCallback(async (force = false) => {
     try {
       setLoading(true);
       setError(null);
       const [docs, kbs] = await Promise.all([
-        fetchDocuments().catch(() => []),
-        fetchKnowledgeBases().catch(() => []),
+        fetchDocuments(force).catch(() => []),
+        fetchKnowledgeBases(force).catch(() => []),
       ]);
       setDocuments(docs || []);
       setKnowledgeBases(kbs || []);
@@ -61,7 +61,7 @@ const Documents = () => {
     ];
     const hasProcessing = documents.some((d) => processingStatuses.includes(d.status));
     if (!hasProcessing) return;
-    const timer = setTimeout(loadDocuments, 3000);
+    const timer = setTimeout(() => loadDocuments(true), 3000);
     return () => clearTimeout(timer);
   }, [documents, loadDocuments]);
 
@@ -139,14 +139,14 @@ const Documents = () => {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
             <FileText size={16} />
             <span>Document Repository</span>
           </div>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
             Knowledge Documents
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Upload, chunk, inspect, and manage your vector-indexed documents.
           </p>
         </div>
@@ -180,12 +180,12 @@ const Documents = () => {
 
       {/* Error Banner */}
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="flex items-center gap-3 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
           <AlertCircle size={18} className="shrink-0" />
           <span>{error}</span>
           <button
             onClick={loadDocuments}
-            className="ml-auto text-xs font-semibold underline hover:no-underline"
+            className="ml-auto text-xs font-semibold underline hover:no-underline cursor-pointer"
           >
             Retry
           </button>
@@ -194,27 +194,27 @@ const Documents = () => {
 
       {/* Stats Quick Strip */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500">Total Documents</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Documents</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
             {loading ? '…' : documents.length}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500">Indexed Chunks</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-600">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Indexed Chunks</p>
+          <p className="mt-1 text-2xl font-bold text-indigo-600 dark:text-indigo-400">
             {loading ? '…' : `${totalChunks} chunks`}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500">Indexed Documents</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Indexed Documents</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
             {loading ? '…' : `${indexedCount} / ${documents.length}`}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500">Index Status</p>
-          <div className={`mt-1 flex items-center gap-1.5 font-bold text-sm ${allIndexed ? 'text-emerald-600' : 'text-amber-500'}`}>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Index Status</p>
+          <div className={`mt-1 flex items-center gap-1.5 font-bold text-sm ${allIndexed ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
             <CheckCircle2 size={18} />
             <span>{allIndexed ? '100% Healthy' : 'Processing…'}</span>
           </div>
@@ -222,7 +222,7 @@ const Documents = () => {
       </div>
 
       {/* Filter and View Controls Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
         <div className="flex flex-1 items-center gap-3">
           <div className="w-full max-w-xs">
             <Input
@@ -236,7 +236,7 @@ const Documents = () => {
           <select
             value={selectedKbFilter}
             onChange={(e) => setSelectedKbFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-950 cursor-pointer"
           >
             <option value="all">All Knowledge Bases</option>
             {knowledgeBases.map((kb) => (
@@ -247,13 +247,13 @@ const Documents = () => {
           </select>
         </div>
 
-        <div className="flex items-center gap-1.5 self-end sm:self-auto border border-slate-200 p-1 rounded-xl bg-slate-50">
+        <div className="flex items-center gap-1.5 self-end sm:self-auto border border-slate-200 dark:border-slate-700 p-1 rounded-xl bg-slate-50 dark:bg-slate-800">
           <button
             onClick={() => setViewMode('grid')}
-            className={`rounded-lg p-1.5 text-xs font-semibold transition ${
+            className={`rounded-lg p-1.5 text-xs font-semibold transition cursor-pointer ${
               viewMode === 'grid'
-                ? 'bg-white text-indigo-600 shadow-xs'
-                : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
             title="Grid View"
           >
@@ -261,10 +261,10 @@ const Documents = () => {
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`rounded-lg p-1.5 text-xs font-semibold transition ${
+            className={`rounded-lg p-1.5 text-xs font-semibold transition cursor-pointer ${
               viewMode === 'table'
-                ? 'bg-white text-indigo-600 shadow-xs'
-                : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
             title="Table View"
           >
@@ -279,7 +279,7 @@ const Documents = () => {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl border border-slate-200 bg-white animate-pulse"
+              className="h-44 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 animate-pulse"
             />
           ))}
         </div>

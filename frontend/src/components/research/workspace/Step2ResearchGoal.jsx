@@ -219,7 +219,8 @@ const Step2ResearchGoal = ({
       suggestion.improvementsDesired ||
       suggestion.improvements ||
       improvementGoal;
-    const focus = suggestion.focusAreas || focusAreas;
+    const rawFocus = suggestion.focusAreas || focusAreas;
+    const focus = Array.isArray(rawFocus) ? rawFocus.join(', ') : (typeof rawFocus === 'string' ? rawFocus : '');
 
     setResearchTopic(topic);
     setMainResearchProblem(problem);
@@ -355,7 +356,9 @@ const Step2ResearchGoal = ({
             {suggestion.focusAreas && (
               <div>
                 <span className="font-semibold text-slate-700">Focus Areas: </span>
-                <span className="text-slate-800">{suggestion.focusAreas}</span>
+                <span className="text-slate-800">
+                  {Array.isArray(suggestion.focusAreas) ? suggestion.focusAreas.join(', ') : String(suggestion.focusAreas)}
+                </span>
               </div>
             )}
           </div>

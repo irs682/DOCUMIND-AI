@@ -76,19 +76,19 @@ const ExtractionModal = ({
       size="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3.5">
+        <div className="flex items-center gap-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/60 dark:bg-indigo-950/30 p-3.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
             <FileText size={18} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Document</p>
-            <p className="truncate text-sm font-semibold text-slate-900" title={documentName}>{documentName}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">Document</p>
+            <p className="truncate text-sm font-semibold text-slate-900 dark:text-white" title={documentName}>{documentName}</p>
           </div>
           <span
             className={`ml-auto rounded-full border px-2 py-0.5 text-[10px] font-bold ${
               isDocumentReady
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                : 'border-amber-200 bg-amber-50 text-amber-700'
+                ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
             }`}
           >
             {isDocumentReady ? 'Ready to extract' : 'Document is still processing'}
@@ -98,21 +98,21 @@ const ExtractionModal = ({
         <div>
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
             <div>
-              <h4 className="text-sm font-bold text-slate-900">What do you want to extract?</h4>
-              <p className="mt-0.5 text-xs text-slate-500">Select one or more categories for a single grounded extraction.</p>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">What do you want to extract?</h4>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Select one or more categories for a single grounded extraction.</p>
             </div>
             <div className="flex items-center gap-3 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setSelectedTypes(EXTRACTION_CATEGORIES.map((category) => category.id))}
-                className="text-indigo-600 hover:text-indigo-800"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
               >
                 Select all
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedTypes([])}
-                className="text-slate-500 hover:text-slate-700"
+                className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 Clear
               </button>
@@ -129,20 +129,20 @@ const ExtractionModal = ({
                   key={category.id}
                   className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 transition ${
                     isSelected
-                      ? 'border-indigo-300 bg-indigo-50/70 shadow-2xs'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-2xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleType(category.id)}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-700 dark:bg-slate-800 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <Icon size={15} className={isSelected ? 'mt-0.5 shrink-0 text-indigo-600' : 'mt-0.5 shrink-0 text-slate-400'} />
+                  <Icon size={15} className={isSelected ? 'mt-0.5 shrink-0 text-indigo-600 dark:text-indigo-400' : 'mt-0.5 shrink-0 text-slate-400 dark:text-slate-500'} />
                   <span className="min-w-0">
-                    <span className="block text-xs font-bold text-slate-800">{category.label}</span>
-                    <span className="mt-0.5 block text-[10px] leading-relaxed text-slate-500">{category.description}</span>
+                    <span className="block text-xs font-bold text-slate-800 dark:text-slate-200">{category.label}</span>
+                    <span className="mt-0.5 block text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">{category.description}</span>
                   </span>
                 </label>
               );
@@ -151,10 +151,10 @@ const ExtractionModal = ({
         </div>
 
         <div>
-          <label htmlFor="custom-extraction-fields" className="text-sm font-bold text-slate-900">
+          <label htmlFor="custom-extraction-fields" className="text-sm font-bold text-slate-900 dark:text-white">
             Custom extraction
           </label>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             Describe the fields you need, such as “project objective, methodology, datasets, and evaluation metrics.”
           </p>
           <textarea
@@ -167,24 +167,24 @@ const ExtractionModal = ({
             rows={3}
             maxLength={1200}
             placeholder="Extract all machine-learning algorithms, their purpose, and any evaluation metrics."
-            className="mt-2.5 w-full resize-y rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="mt-2.5 w-full resize-y rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-100 outline-none transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/50"
           />
-          <div className="mt-1 flex justify-end text-[10px] text-slate-400">{customFields.length}/1200</div>
+          <div className="mt-1 flex justify-end text-[10px] text-slate-400 dark:text-slate-500">{customFields.length}/1200</div>
         </div>
 
         {(validationError || error) && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-700">
+          <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3.5 py-2.5 text-xs font-medium text-rose-700 dark:text-rose-300">
             {validationError || error}
           </div>
         )}
 
         {!isDocumentReady && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-800">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/40 px-3.5 py-2.5 text-xs text-amber-800 dark:text-amber-300">
             Extraction will be available when the document has finished processing.
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+        <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
           <Button variant="outline" onClick={closeModal} disabled={isSubmitting}>Cancel</Button>
           <Button
             type="submit"

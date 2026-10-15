@@ -1,38 +1,13 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { ArrowUpRight, FileSearch, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react';
-import { useThemeContext } from '../context/ThemeContext';
+import { ArrowUpRight, FileSearch, ShieldCheck, Sparkles } from 'lucide-react';
 
 const AuthLayout = () => {
-  const { theme, toggleTheme } = useThemeContext();
-
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-5 sm:px-6 sm:py-8 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_14%,rgba(99,102,241,0.34),transparent_30%),radial-gradient(circle_at_88%_88%,rgba(20,184,166,0.2),transparent_27%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-slate-50 px-4 py-5 sm:px-6 sm:py-8 flex items-center justify-center">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_14%,rgba(99,102,241,0.14),transparent_35%),radial-gradient(circle_at_88%_88%,rgba(20,184,166,0.1),transparent_30%)]" />
 
-      {/* Floating Theme Switcher at Top Right */}
-      <div className="absolute top-4 right-4 z-20">
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors shadow-lg flex items-center gap-2 text-xs font-semibold"
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
-        >
-          {theme === 'dark' ? (
-            <>
-              <Sun size={16} className="text-amber-400" />
-              <span className="hidden sm:inline">Light</span>
-            </>
-          ) : (
-            <>
-              <Moon size={16} className="text-indigo-400" />
-              <span className="hidden sm:inline">Dark</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      <div className="relative mx-auto grid min-h-[calc(100vh-2.5rem)] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-white dark:bg-slate-900 shadow-2xl lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid min-h-[calc(100vh-2.5rem)] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl lg:grid-cols-[1.05fr_0.95fr]">
         {/* Left Brand Panel */}
         <section className="hidden flex-col justify-between bg-slate-950 p-10 text-white lg:flex">
           <Link to="/" className="inline-flex items-center gap-3 text-lg font-bold tracking-tight">

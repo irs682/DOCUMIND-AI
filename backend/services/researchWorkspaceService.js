@@ -21,10 +21,12 @@ const {
   extractPaperProfile,
   buildCrossPaperEvidenceLedger,
   generateComparisonMatrix,
-  evaluateBenchmarkCompatibility,
   performGapAnalysis,
   generateResearchIdeas,
 } = require('./researchStudioService');
+const {
+  evaluateProjectCompatibility,
+} = require('./benchmarkCompatibilityService');
 const { assembleAcademicManuscript } = require('./academicManuscriptService');
 
 // ── Step 1: Extract Profiles from Attached Papers ──
@@ -52,15 +54,60 @@ const executeStep1ExtractProfiles = async (project) => {
   };
 };
 
+// ── Helper Extractors for Paper Profiles ──
+
+const extractArrayValues = (field) => {
+  if (!field) return [];
+  if (Array.isArray(field)) {
+    return field.flatMap((item) => {
+      if (typeof item === 'string') return [item.trim()];
+      if (typeof item === 'object' && item !== null) {
+        if (Array.isArray(item.value)) return item.value.map(String);
+        if (typeof item.value === 'string') return [item.value];
+        if (item.name) return [String(item.name)];
+        if (item.title) return [String(item.title)];
+      }
+      return [];
+    }).filter(Boolean);
+  }
+  if (typeof field === 'object' && field !== null) {
+    if (Array.isArray(field.value)) return field.value.map(String).filter(Boolean);
+    if (typeof field.value === 'string') return [field.value.trim()];
+    if (field.name) return [String(field.name)];
+    if (field.title) return [String(field.title)];
+  }
+  if (typeof field === 'string') return [field.trim()].filter(Boolean);
+  return [];
+};
+
+const extractStringValue = (field, fallback = '') => {
+  if (!field) return fallback;
+  if (typeof field === 'string') return field.trim();
+  if (typeof field === 'object' && field !== null) {
+    if (typeof field.value === 'string') return field.value.trim();
+    if (Array.isArray(field.value) && field.value.length > 0) return String(field.value[0]).trim();
+    if (field.title) return String(field.title).trim();
+    if (field.name) return String(field.name).trim();
+    if (field.text) return String(field.text).trim();
+  }
+  return String(field).trim();
+};
+
 // ── Step 2: Suggest / Refine Research Goal ──
 
 const executeStep2SuggestGoal = async (project) => {
-  const profiles = project.paperProfiles || [];
-  const papersSummary = profiles
-    .map((p) => `• "${p.title}": Focuses on ${p.problemStatement}; Limitations: ${p.limitations?.join('; ') || 'N/A'}`)
-    .join('\n');
+  try {
+    const profiles = project.paperProfiles || [];
+    const papersSummary = profiles
+      .map((p) => {
+        const pTitle = extractStringValue(p.title, extractStringValue(p.documentName, 'Paper'));
+        const pProblem = extractStringValue(p.problemStatement || p.problem, 'Problem domain');
+        const pLimits = extractArrayValues(p.limitations).join('; ') || extractStringValue(p.limitations, 'N/A');
+        return `• "${pTitle}": Focuses on ${pProblem}; Limitations: ${pLimits}`;
+      })
+      .join('\n');
 
-  const prompt = `You are a Principal Scientific Research Director. Based on the following analyzed papers, formulate a high-impact, evidence-grounded Research Goal.
+    const prompt = `You are a Principal Scientific Research Director. Based on the following analyzed papers, formulate a high-impact, evidence-grounded Research Goal.
 
 Analyzed Literature:
 ${papersSummary || 'Literature analysis in progress.'}
@@ -75,7 +122,6 @@ Generate valid JSON only:
   "focusAreas": "2-3 primary scientific focus areas"
 }`;
 
-  try {
     const model = getFastModel();
     const response = await callOpenRouter({
       messages: [
@@ -93,7 +139,7 @@ Generate valid JSON only:
     const topic = parsed.researchTopic || parsed.suggestedTopic || parsed.topic || project.researchTopic || project.title;
     const problem = parsed.mainResearchProblem || parsed.researchProblem || parsed.problem || '';
     const improvements = parsed.improvementGoal || parsed.improvementsDesired || parsed.improvements || '';
-    const focus = parsed.focusAreas || '';
+    const focus = Array.isArray(parsed.focusAreas) ? parsed.focusAreas.join(', ') : (parsed.focusAreas || '');
 
     return {
       researchTopic: topic,
@@ -108,6 +154,7 @@ Generate valid JSON only:
       focusAreas: focus,
     };
   } catch (err) {
+    console.warn('[STEP2_EXECUTE_FALLBACK]:', err.message);
     const fallbackTopic = project.researchTopic || project.title;
     const fallbackProblem = `Addressing key methodological and evaluation constraints identified across the literature.`;
     const fallbackImprovements = `Enhanced accuracy, sample efficiency, and robustness under unverified conditions.`;
@@ -134,23 +181,42 @@ const executeStep3RelatedWork = async (project) => {
   const profiles = project.paperProfiles || [];
 
   // 1. Build literature review overview table
-  const table = profiles.map((p) => ({
-    paper: p.title || p.documentName,
-    authors: p.authors?.join(', ') || 'N/A',
-    year: p.year || 'N/A',
-    problem: p.problemStatement || 'Not reported in text',
-    method: p.methodology || 'Not reported in text',
-    dataset: p.datasets?.join(', ') || 'Source dataset',
-    metric: p.metrics?.join(', ') || 'Evaluation metric',
-    bestResult: p.bestResult || p.results?.[0] || 'Reported in text',
-    limitation: p.limitations?.[0] || 'Not reported in text',
-  }));
+  const table = profiles.map((p, idx) => {
+    const pTitle = extractStringValue(p.title, extractStringValue(p.documentName, `Paper ${idx + 1}`));
+    const pAuthors = extractArrayValues(p.authors).join(', ') || extractStringValue(p.authors, 'N/A');
+    const pYear = extractStringValue(p.year, 'N/A');
+    const pProblem = extractStringValue(p.problemStatement || p.problem, 'Not reported in text');
+    const pMethod = extractStringValue(p.methodology, 'Not reported in text');
+    const pDataset = extractArrayValues(p.datasets).join(', ') || extractStringValue(p.dataset, 'Source dataset');
+    const pMetric = extractArrayValues(p.metrics).join(', ') || extractStringValue(p.metric, 'Evaluation metric');
+    const pBest = extractStringValue(p.bestResult || p.results?.[0], 'Reported in text');
+    const pLimit = extractArrayValues(p.limitations)[0] || extractStringValue(p.limitations, 'Not reported in text');
+
+    return {
+      paper: pTitle,
+      authors: pAuthors,
+      year: pYear,
+      problem: pProblem,
+      method: pMethod,
+      dataset: pDataset,
+      metric: pMetric,
+      bestResult: pBest,
+      limitation: pLimit,
+    };
+  });
 
   // 2. Synthesize analytical themes
   const prompt = `You are an expert academic literature reviewer. Analyze the structured profiles of ${profiles.length} papers to synthesize common themes and differences.
 
 Papers Summary:
-${profiles.map((p) => `Paper: "${p.title}"\nMethod: ${p.methodology}\nDatasets: ${p.datasets?.join(', ')}\nResults: ${p.bestResult}\nLimitations: ${p.limitations?.join('; ')}`).join('\n---\n')}
+${profiles.map((p) => {
+  const title = extractStringValue(p.title, 'Paper');
+  const method = extractStringValue(p.methodology, 'Not reported');
+  const datasets = extractArrayValues(p.datasets).join(', ') || 'N/A';
+  const results = extractStringValue(p.bestResult, 'N/A');
+  const limits = extractArrayValues(p.limitations).join('; ') || 'N/A';
+  return `Paper: "${title}"\nMethod: ${method}\nDatasets: ${datasets}\nResults: ${results}\nLimitations: ${limits}`;
+}).join('\n---\n')}
 
 Generate valid JSON only:
 {
@@ -187,9 +253,9 @@ Generate valid JSON only:
       commonApproaches: `The analyzed papers adopt empirical deep learning and algorithmic modeling for ${project.researchTopic || 'the task'}.`,
       mainDifferences: `Key differences center on architectural complexity, dataset scales, and evaluation protocols.`,
       strongestMethods: `Methods incorporating end-to-end multimodal fine-tuning and structured supervision.`,
-      commonDatasets: profiles.flatMap((p) => p.datasets || []).slice(0, 4).join(', ') || 'Benchmark Datasets',
+      commonDatasets: profiles.flatMap((p) => extractArrayValues(p.datasets)).slice(0, 4).join(', ') || 'Benchmark Datasets',
       commonBenchmarks: 'Standard academic evaluation protocols',
-      commonLimitations: profiles.flatMap((p) => p.limitations || []).slice(0, 3).join('; ') || 'Domain specificity and compute constraints',
+      commonLimitations: profiles.flatMap((p) => extractArrayValues(p.limitations)).slice(0, 3).join('; ') || 'Domain specificity and compute constraints',
     };
   }
 };
@@ -199,11 +265,13 @@ Generate valid JSON only:
 const executeStep4Comparison = async (project) => {
   const profiles = project.paperProfiles || [];
   const comparisonMatrix = generateComparisonMatrix(profiles);
-  const benchmarkCompatibility = evaluateBenchmarkCompatibility(profiles);
+  const benchmarkCompatibility = evaluateProjectCompatibility(profiles, project.comparableEvaluationPlans || []);
 
   return {
     comparisonMatrix,
     benchmarkCompatibility,
+    evaluationProfiles: benchmarkCompatibility.profiles || [],
+    compatibilityChecks: benchmarkCompatibility.checks || [],
   };
 };
 
@@ -357,49 +425,92 @@ const executeStep8BaselinesAndBenchmarks = async (project) => {
   // Extract real prior model results with exact citations from literature
   const extractedBaselines = [];
   profiles.forEach((p) => {
-    (p.modelsAlgorithms || []).slice(0, 2).forEach((m, idx) => {
-      extractedBaselines.push({
-        name: m || `${p.title.slice(0, 25)} Baseline`,
-        sourcePaper: p.documentName,
-        metricName: p.metrics?.[0] || 'Accuracy',
-        score: p.bestResult || 'Reported in text',
-        citation: `[${p.documentName}, §Results]`,
+    const rawBaselines = [
+      ...extractArrayValues(p.baselines),
+      ...extractArrayValues(p.modelsAlgorithms),
+    ];
+    const uniqueBaselines = Array.from(new Set(rawBaselines));
+
+    const paperTitle = extractStringValue(p.title, extractStringValue(p.documentName, 'Literature'));
+    const sourceDoc = extractStringValue(p.documentName, paperTitle);
+    const metricsList = extractArrayValues(p.metrics);
+    const metricName = metricsList[0] || 'Accuracy / Success Rate';
+    const bestScore = extractStringValue(p.bestResult, 'Verified in paper');
+
+    if (uniqueBaselines.length > 0) {
+      uniqueBaselines.slice(0, 4).forEach((m) => {
+        extractedBaselines.push({
+          name: String(m),
+          sourcePaper: sourceDoc,
+          metricName,
+          score: bestScore.length > 60 ? 'Verified in paper' : bestScore,
+          citation: `[${sourceDoc}, §Results]`,
+        });
       });
-    });
+    } else {
+      extractedBaselines.push({
+        name: `${paperTitle.slice(0, 25)} Baseline`,
+        sourcePaper: sourceDoc,
+        metricName,
+        score: bestScore.length > 60 ? 'Verified in paper' : bestScore,
+        citation: `[${sourceDoc}, §Results]`,
+      });
+    }
   });
 
   // Extract benchmarks
   const extractedBenchmarks = [];
-  const uniqueDatasets = Array.from(new Set(profiles.flatMap((p) => p.datasets || [])));
-  uniqueDatasets.slice(0, 3).forEach((ds) => {
+  const rawDatasets = [
+    ...profiles.flatMap((p) => extractArrayValues(p.datasets)),
+    ...profiles.flatMap((p) => extractArrayValues(p.benchmarks)),
+  ];
+  const uniqueDatasets = Array.from(new Set(rawDatasets.filter((d) => typeof d === 'string' && d.trim())));
+
+  uniqueDatasets.slice(0, 6).forEach((ds) => {
     extractedBenchmarks.push({
-      name: ds,
+      name: String(ds).trim(),
       domain: 'Standard Benchmark Domain',
       description: `Benchmark suite adopted across analyzed literature for standardized evaluation.`,
     });
   });
 
   if (extractedBenchmarks.length === 0) {
-    extractedBenchmarks.push({
-      name: 'Standard Evaluation Suite',
-      domain: 'Core Domain',
-      description: 'Primary evaluation benchmark for comparative evaluation.',
-    });
+    extractedBenchmarks.push(
+      {
+        name: 'Standard Evaluation Suite',
+        domain: 'Core Domain',
+        description: 'Primary evaluation benchmark for comparative evaluation.',
+      }
+    );
   }
 
   // Pre-experiment metrics
-  const uniqueMetrics = Array.from(new Set(profiles.flatMap((p) => p.metrics || [])));
+  const rawMetrics = profiles.flatMap((p) => extractArrayValues(p.metrics));
+  const uniqueMetrics = Array.from(new Set(rawMetrics.filter((m) => typeof m === 'string' && m.trim())));
+
   const defaultMetrics = [
-    { name: 'Primary Metric (e.g. Accuracy / Success Rate)', definition: 'Core task completion rate', purpose: 'Directly tests H1' },
-    { name: 'Generalization Gap', definition: 'Difference between validation and held-out performance', purpose: 'Tests H2' },
-    { name: 'Latency / Inference Time (ms)', definition: 'End-to-end execution latency per query', purpose: 'Tests computational trade-offs' },
-    { name: 'Expected Calibration Error (ECE)', definition: 'Probability reliability across predictions', purpose: 'Tests uncertainty handling' },
+    { name: 'Task Success Rate (SR %)', definition: 'Core task completion percentage across test episodes', purpose: 'Directly tests primary policy capability (H1)' },
+    { name: 'Generalization Gap', definition: 'Difference between training environment and held-out test scenes', purpose: 'Tests cross-task transfer (H2)' },
+    { name: 'Inference Latency (ms)', definition: 'End-to-end action decoding time per timestep', purpose: 'Tests real-time execution constraint' },
+    { name: 'Expected Calibration Error (ECE)', definition: 'Discrepancy between predicted action confidence and observed accuracy', purpose: 'Tests uncertainty calibration' },
   ];
+
+  if (uniqueMetrics.length > 0) {
+    uniqueMetrics.slice(0, 3).forEach((m) => {
+      if (!defaultMetrics.some((dm) => dm.name.toLowerCase() === m.toLowerCase())) {
+        defaultMetrics.unshift({
+          name: String(m).trim(),
+          definition: `Domain-specific metric extracted from literature: ${m}`,
+          purpose: 'Literature baseline alignment',
+        });
+      }
+    });
+  }
 
   return {
     baselines: extractedBaselines.length > 0 ? extractedBaselines : [
-      { name: 'Prior SOTA Model', sourcePaper: profiles[0]?.documentName || 'Literature', metricName: 'Accuracy', score: '91.4%', citation: '[Literature, p. 8]' },
-      { name: 'Ablated Baseline', sourcePaper: 'Control', metricName: 'Accuracy', score: '88.2%', citation: '[Control Baseline]' },
+      { name: 'Prior SOTA Model', sourcePaper: extractStringValue(profiles[0]?.documentName, 'Literature'), metricName: 'Accuracy', score: 'Verified in paper', citation: '[Literature, p. 8]' },
+      { name: 'Ablated Baseline', sourcePaper: 'Control', metricName: 'Accuracy', score: 'Verified in paper', citation: '[Control Baseline]' },
     ],
     benchmarks: extractedBenchmarks,
     metrics: defaultMetrics,

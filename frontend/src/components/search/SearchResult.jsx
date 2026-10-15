@@ -19,15 +19,15 @@ const SearchResult = ({ result, onAskAI }) => {
   const scorePercentage = Math.round(similarityScore * 100);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md space-y-3">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition-all hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 font-bold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold">
             <FileText size={20} />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">{documentName}</h4>
-            <p className="text-xs text-slate-500 font-medium">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{documentName}</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Page {pageNumber} • {knowledgeBase}
             </p>
           </div>
@@ -39,15 +39,15 @@ const SearchResult = ({ result, onAskAI }) => {
       </div>
 
       {/* Snippet text */}
-      <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 text-xs text-slate-800 font-sans leading-relaxed">
+      <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3.5 border border-slate-100 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 font-sans leading-relaxed">
         "{snippet}"
       </div>
 
       {/* Action buttons bar */}
-      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="text-slate-500 hover:text-indigo-600 font-medium transition"
+          className="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition"
         >
           {showDetails ? 'Hide Vector Details' : 'View Vector Details'}
         </button>
@@ -55,7 +55,7 @@ const SearchResult = ({ result, onAskAI }) => {
         {onAskAI && (
           <button
             onClick={() => onAskAI(result)}
-            className="flex items-center gap-1.5 font-bold text-indigo-600 hover:text-indigo-700 transition"
+            className="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition"
           >
             <MessageSquare size={14} />
             Ask AI about this

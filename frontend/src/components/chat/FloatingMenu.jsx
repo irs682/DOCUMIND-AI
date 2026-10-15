@@ -55,7 +55,7 @@ const FloatingMenu = ({ isOpen, onClose, triggerRect, children, width = 'w-48' }
         left: `${left}px`,
         transform: showAbove ? 'translateY(-100%)' : 'none',
       }}
-      className={`z-50 ${width} rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl text-xs text-slate-700 space-y-0.5 animate-in fade-in zoom-in-95 duration-100 select-none`}
+      className={`z-50 ${width} rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-xl dark:shadow-2xl dark:shadow-slate-950/80 text-xs text-slate-700 dark:text-slate-200 space-y-0.5 animate-in fade-in zoom-in-95 duration-100 select-none`}
       onClick={(e) => e.stopPropagation()}
     >
       {children}

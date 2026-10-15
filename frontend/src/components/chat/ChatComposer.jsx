@@ -52,27 +52,27 @@ const ChatComposer = ({
       : 'Ask anything about your documents…';
 
   return (
-    <div className="p-3 sm:p-4 bg-white/95 border-t border-slate-200/90 backdrop-blur-xs select-none">
+    <div className="p-3 sm:p-4 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200/90 dark:border-slate-800 backdrop-blur-xs select-none">
       <div className="max-w-4xl mx-auto space-y-2">
         {/* Selected Document Chips Header */}
         {sessionDocs.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap overflow-x-auto pb-1 max-h-20 select-none">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0 mr-1">
               Active Context:
             </span>
             {sessionDocs.map((doc) => (
               <span
                 key={doc._id || doc.id}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-200/70 px-2.5 py-1 text-xs font-semibold text-indigo-700 shadow-2xs group"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/60 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300 shadow-2xs group"
               >
-                <FileText size={12} className="text-indigo-500 shrink-0" />
+                <FileText size={12} className="text-indigo-500 dark:text-indigo-400 shrink-0" />
                 <span className="truncate max-w-[140px] sm:max-w-[200px]" title={doc.name || doc.originalName}>
                   {doc.name || doc.originalName}
                 </span>
                 <button
                   type="button"
                   onClick={() => onRemoveSessionDoc(doc._id || doc.id)}
-                  className="rounded hover:bg-indigo-200/70 p-0.5 text-indigo-400 hover:text-indigo-800 transition cursor-pointer"
+                  className="rounded hover:bg-indigo-200/70 dark:hover:bg-indigo-800/60 p-0.5 text-indigo-400 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition cursor-pointer"
                   title="Remove document from this session"
                 >
                   <X size={11} />
@@ -83,7 +83,7 @@ const ChatComposer = ({
             <button
               type="button"
               onClick={onOpenDocPicker}
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 px-2 py-0.5 rounded-lg hover:bg-indigo-50 transition cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 px-2 py-0.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition cursor-pointer"
             >
               <Plus size={12} /> Add more
             </button>
@@ -91,7 +91,7 @@ const ChatComposer = ({
         )}
 
         {/* Elevated Rounded Composer Box */}
-        <div className="relative rounded-2xl sm:rounded-3xl border border-slate-200 bg-slate-50/70 p-2 sm:p-2.5 shadow-sm focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-3 focus-within:ring-indigo-100 transition duration-150">
+        <div className="relative rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-2 sm:p-2.5 shadow-sm focus-within:border-indigo-400 dark:focus-within:border-indigo-500 focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:ring-3 focus-within:ring-indigo-100 dark:focus-within:ring-indigo-950/50 transition duration-150">
           <textarea
             ref={textareaRef}
             rows={1}
@@ -100,7 +100,7 @@ const ChatComposer = ({
             onKeyDown={handleKeyDown}
             disabled={isLoading && !isStreaming}
             placeholder={placeholderText}
-            className="w-full resize-none bg-transparent px-2.5 py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none leading-relaxed disabled:opacity-50"
+            className="w-full resize-none bg-transparent px-2.5 py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none leading-relaxed disabled:opacity-50"
           />
 
           {/* Action Row */}
@@ -110,10 +110,10 @@ const ChatComposer = ({
               <button
                 type="button"
                 onClick={onOpenDocPicker}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/70 transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 transition cursor-pointer"
                 title="Attach documents to this conversation"
               >
-                <Paperclip size={14} className="text-slate-400" />
+                <Paperclip size={14} className="text-slate-400 dark:text-slate-500" />
                 <span className="hidden sm:inline">Attach Files</span>
               </button>
             </div>
@@ -150,7 +150,7 @@ const ChatComposer = ({
         </div>
 
         {/* Footer Subtext */}
-        <div className="flex items-center justify-between px-2 text-[10px] text-slate-400">
+        <div className="flex items-center justify-between px-2 text-[10px] text-slate-400 dark:text-slate-500">
           <span>Enter sends · Shift+Enter for new line</span>
           <span>Grounded with OpenRouter & Vector Search</span>
         </div>

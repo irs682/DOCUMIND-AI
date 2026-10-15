@@ -68,7 +68,7 @@ const Step5ResearchGap = ({
       category: newGapCategory,
       description: newGapDesc.trim(),
       evidenceQuote: 'Identified by user through domain analysis.',
-      supportingPapers: project?.paperProfiles?.map((p) => p.title || 'Selected Paper') || [],
+      supportingPapers: project?.paperProfiles?.map((p) => (typeof p.title === 'object' && p.title !== null ? (p.title.value || p.title.text || 'Selected Paper') : (p.title || 'Selected Paper'))) || [],
       impact: 'High',
     };
 

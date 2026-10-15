@@ -185,14 +185,14 @@ const CompareDocuments = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
             <GitCompare size={16} />
             <span>Document Intelligence</span>
           </div>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
             Compare Documents
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Semantically analyze two document versions for changes, added requirements, modified metrics, and contradictions.
           </p>
         </div>
@@ -202,7 +202,7 @@ const CompareDocuments = () => {
             variant="ghost"
             leftIcon={History}
             onClick={() => setShowHistory(!showHistory)}
-            className="text-slate-600"
+            className="text-slate-600 dark:text-slate-300"
           >
             History ({history.length})
           </Button>
@@ -224,28 +224,30 @@ const CompareDocuments = () => {
         {/* Document A Card */}
         <div
           className={`rounded-2xl border p-6 transition shadow-xs ${
-            docA ? 'border-indigo-200 bg-white' : 'border-slate-200 bg-slate-50/70'
+            docA
+              ? 'border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-slate-900'
+              : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50'
           }`}
         >
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Document A (Baseline / Prior)
             </span>
             {docA && (
-              <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 size={13} /> Selected
               </span>
             )}
           </div>
 
-          <label className="block text-xs font-semibold text-slate-700 mb-2">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
             Select Document
           </label>
           <select
             value={selectedDocAId}
             onChange={(e) => setSelectedDocAId(e.target.value)}
             disabled={isComparing}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-white shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">-- Choose first document --</option>
             {documents.map((d) => (
@@ -256,15 +258,15 @@ const CompareDocuments = () => {
           </select>
 
           {docA && (
-            <div className="mt-4 rounded-xl bg-slate-50 p-3.5 border border-slate-100 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 shrink-0">
+            <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3.5 border border-slate-100 dark:border-slate-700/60 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 shrink-0">
                 <FileText size={20} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-bold text-slate-800 truncate">
+                <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                   {docA.name || docA.originalName}
                 </div>
-                <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
                   <span>{docA.chunksCount || 0} chunks</span>
                   <span>•</span>
                   <span className="capitalize">{docA.status || 'Ready'}</span>
@@ -277,28 +279,30 @@ const CompareDocuments = () => {
         {/* Document B Card */}
         <div
           className={`rounded-2xl border p-6 transition shadow-xs ${
-            docB ? 'border-indigo-200 bg-white' : 'border-slate-200 bg-slate-50/70'
+            docB
+              ? 'border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-slate-900'
+              : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50'
           }`}
         >
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
               Document B (Updated / Compare Target)
             </span>
             {docB && (
-              <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 size={13} /> Selected
               </span>
             )}
           </div>
 
-          <label className="block text-xs font-semibold text-slate-700 mb-2">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
             Select Document
           </label>
           <select
             value={selectedDocBId}
             onChange={(e) => setSelectedDocBId(e.target.value)}
             disabled={isComparing}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-white shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
           >
             <option value="">-- Choose second document --</option>
             {documents.map((d) => (
@@ -309,15 +313,15 @@ const CompareDocuments = () => {
           </select>
 
           {docB && (
-            <div className="mt-4 rounded-xl bg-indigo-50/40 p-3.5 border border-indigo-100/80 flex items-center gap-3">
+            <div className="mt-4 rounded-xl bg-indigo-50/40 dark:bg-indigo-950/30 p-3.5 border border-indigo-100/80 dark:border-indigo-900/50 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white shrink-0">
                 <FileText size={20} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-bold text-slate-800 truncate">
+                <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                   {docB.name || docB.originalName}
                 </div>
-                <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
                   <span>{docB.chunksCount || 0} chunks</span>
                   <span>•</span>
                   <span className="capitalize">{docB.status || 'Ready'}</span>
@@ -341,14 +345,14 @@ const CompareDocuments = () => {
         </Button>
 
         {isComparing && (
-          <div className="flex items-center gap-2.5 text-sm font-medium text-indigo-600 animate-pulse mt-2">
+          <div className="flex items-center gap-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 animate-pulse mt-2">
             <RefreshCw size={16} className="animate-spin" />
             <span>{comparisonProgress || 'Processing documents…'}</span>
           </div>
         )}
 
         {error && (
-          <div className="mt-2 rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm font-medium text-rose-700 flex items-center gap-2.5 max-w-lg text-center">
+          <div className="mt-2 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 p-4 text-sm font-medium text-rose-700 dark:text-rose-400 flex items-center gap-2.5 max-w-lg text-center">
             <AlertCircle size={18} className="shrink-0" />
             <span>{error}</span>
           </div>
@@ -357,46 +361,46 @@ const CompareDocuments = () => {
 
       {/* Comparison History Modal / Drawer */}
       {showHistory && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               Past Comparison History
             </h3>
             <button
               onClick={() => setShowHistory(false)}
-              className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+              className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               Close
             </button>
           </div>
 
           {history.length === 0 ? (
-            <p className="text-sm text-slate-400 py-4">No previous comparisons found.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 py-4">No previous comparisons found.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {history.map((item) => (
                 <div
                   key={item._id}
                   onClick={() => handleSelectHistoryItem(item._id)}
-                  className="cursor-pointer rounded-xl border border-slate-200 bg-slate-50/50 p-4 hover:border-indigo-300 hover:bg-indigo-50/20 transition flex flex-col justify-between"
+                  className="cursor-pointer rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50 p-4 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/30 transition flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                       <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                       <button
                         onClick={(e) => handleDeleteHistoryItem(e, item._id)}
-                        className="text-slate-400 hover:text-rose-600 transition"
+                        className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
-                    <div className="text-sm font-bold text-slate-800 line-clamp-1">
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
                       {item.documentAName} ↔ {item.documentBName}
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs font-semibold">
-                    <span className="text-indigo-600">{item.similarityScore}% Similarity</span>
-                    <span className="text-slate-500">{item.stats?.totalDifferences || 0} changes</span>
+                    <span className="text-indigo-600 dark:text-indigo-400">{item.similarityScore}% Similarity</span>
+                    <span className="text-slate-500 dark:text-slate-400">{item.stats?.totalDifferences || 0} changes</span>
                   </div>
                 </div>
               ))}
@@ -409,38 +413,38 @@ const CompareDocuments = () => {
       {comparisonResult && (
         <div className="space-y-6 pt-4">
           {/* Executive Overview Banner */}
-          <div className="rounded-3xl border border-indigo-100 bg-white p-6 sm:p-8 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-slate-100 pb-6">
+          <div className="rounded-3xl border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800 pb-6">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-md bg-indigo-50 text-indigo-700 px-2.5 py-0.5 text-xs font-bold border border-indigo-200">
+                  <span className="rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2.5 py-0.5 text-xs font-bold border border-indigo-200 dark:border-indigo-900/60">
                     Verified Analysis
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
                     Compared on {new Date(comparisonResult.updatedAt || comparisonResult.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <h2 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">
-                  {comparisonResult.documentAName} <span className="text-slate-400 font-normal">vs</span> {comparisonResult.documentBName}
+                <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
+                  {comparisonResult.documentAName} <span className="text-slate-400 dark:text-slate-500 font-normal">vs</span> {comparisonResult.documentBName}
                 </h2>
               </div>
 
               {/* Similarity Score Meter */}
-              <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 shrink-0">
+              <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shrink-0">
                 <div className="text-right">
-                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Overall Similarity
                   </div>
-                  <div className="text-2xl font-black text-indigo-600">
+                  <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
                     {comparisonResult.similarityScore}%
                   </div>
                 </div>
-                <div className="h-10 w-px bg-slate-200" />
+                <div className="h-10 w-px bg-slate-200 dark:bg-slate-700" />
                 <div className="text-left">
-                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Total Findings
                   </div>
-                  <div className="text-2xl font-bold text-slate-800">
+                  <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
                     {comparisonResult.findings?.length || 0}
                   </div>
                 </div>
@@ -449,39 +453,39 @@ const CompareDocuments = () => {
 
             {/* Quick Metrics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-center">
-                <div className="text-xs text-slate-500 font-medium">Differences</div>
-                <div className="text-lg font-bold text-slate-900 mt-0.5">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-3 text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Differences</div>
+                <div className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
                   {comparisonResult.stats?.totalDifferences || 0}
                 </div>
               </div>
-              <div className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-3 text-center">
-                <div className="text-xs text-emerald-700 font-medium">Similarities</div>
-                <div className="text-lg font-bold text-emerald-800 mt-0.5">
+              <div className="rounded-xl border border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/20 p-3 text-center">
+                <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Similarities</div>
+                <div className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mt-0.5">
                   {comparisonResult.stats?.totalSimilarities || 0}
                 </div>
               </div>
-              <div className="rounded-xl border border-blue-100 bg-blue-50/30 p-3 text-center">
-                <div className="text-xs text-blue-700 font-medium">Added</div>
-                <div className="text-lg font-bold text-blue-800 mt-0.5">
+              <div className="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/30 dark:bg-blue-950/20 p-3 text-center">
+                <div className="text-xs text-blue-700 dark:text-blue-400 font-medium">Added</div>
+                <div className="text-lg font-bold text-blue-800 dark:text-blue-300 mt-0.5">
                   {comparisonResult.stats?.totalAdded || 0}
                 </div>
               </div>
-              <div className="rounded-xl border border-rose-100 bg-rose-50/30 p-3 text-center">
-                <div className="text-xs text-rose-700 font-medium">Removed</div>
-                <div className="text-lg font-bold text-rose-800 mt-0.5">
+              <div className="rounded-xl border border-rose-100 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 p-3 text-center">
+                <div className="text-xs text-rose-700 dark:text-rose-400 font-medium">Removed</div>
+                <div className="text-lg font-bold text-rose-800 dark:text-rose-300 mt-0.5">
                   {comparisonResult.stats?.totalRemoved || 0}
                 </div>
               </div>
-              <div className="rounded-xl border border-purple-100 bg-purple-50/30 p-3 text-center">
-                <div className="text-xs text-purple-700 font-medium">Numbers/Dates</div>
-                <div className="text-lg font-bold text-purple-800 mt-0.5">
+              <div className="rounded-xl border border-purple-100 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/20 p-3 text-center">
+                <div className="text-xs text-purple-700 dark:text-purple-400 font-medium">Numbers/Dates</div>
+                <div className="text-lg font-bold text-purple-800 dark:text-purple-300 mt-0.5">
                   {(comparisonResult.stats?.totalNumericChanges || 0) + (comparisonResult.stats?.totalDateChanges || 0)}
                 </div>
               </div>
-              <div className="rounded-xl border border-amber-100 bg-amber-50/30 p-3 text-center">
-                <div className="text-xs text-amber-700 font-medium">Contradictions</div>
-                <div className="text-lg font-bold text-amber-800 mt-0.5">
+              <div className="rounded-xl border border-amber-100 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/20 p-3 text-center">
+                <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">Contradictions</div>
+                <div className="text-lg font-bold text-amber-800 dark:text-amber-300 mt-0.5">
                   {comparisonResult.stats?.totalContradictions || 0}
                 </div>
               </div>
@@ -489,13 +493,13 @@ const CompareDocuments = () => {
           </div>
 
           {/* Tab Navigation: Executive Report vs Findings */}
-          <div className="flex items-center gap-2 border-b border-slate-200">
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setActiveTab('executive')}
               className={`pb-3 px-4 text-sm font-semibold border-b-2 transition ${
                 activeTab === 'executive'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               Executive Report
@@ -504,12 +508,12 @@ const CompareDocuments = () => {
               onClick={() => setActiveTab('findings')}
               className={`pb-3 px-4 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
                 activeTab === 'findings'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               <span>Structured Findings</span>
-              <span className="rounded-full bg-indigo-50 text-indigo-700 px-2 py-0.2 text-xs font-bold">
+              <span className="rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.2 text-xs font-bold">
                 {rawFindings.length}
               </span>
             </button>
@@ -517,7 +521,7 @@ const CompareDocuments = () => {
 
           {/* TAB 1: Executive Report */}
           {activeTab === 'executive' && (
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs leading-relaxed text-slate-800 whitespace-pre-wrap font-sans text-sm sm:text-base space-y-4">
+            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-sans text-sm sm:text-base space-y-4">
               {comparisonResult.summary}
             </div>
           )}
@@ -534,7 +538,7 @@ const CompareDocuments = () => {
                     className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
                       selectedCategory === tab.id
                         ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
                   >
                     {tab.label}
@@ -544,7 +548,7 @@ const CompareDocuments = () => {
 
               {/* Findings List Cards */}
               {filteredFindings.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-slate-400 text-sm">
+                <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-slate-400 dark:text-slate-500 text-sm">
                   No findings in this category.
                 </div>
               ) : (
@@ -553,26 +557,26 @@ const CompareDocuments = () => {
                     <div
                       key={finding.id}
                       onClick={() => setInspectingFinding(finding)}
-                      className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 hover:border-indigo-300 hover:shadow-md transition flex flex-col justify-between space-y-3"
+                      className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition flex flex-col justify-between space-y-3"
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="rounded bg-slate-100 text-slate-700 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider">
+                          <span className="rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider">
                             {finding.category}
                           </span>
-                          <span className="text-[11px] font-medium text-slate-400">
+                          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
                             P.{finding.sourceB?.page || finding.sourceA?.page || 1}
                           </span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
                           {finding.title}
                         </h4>
-                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
                           {finding.description}
                         </p>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                         <span>Inspect Side-by-Side</span>
                         <ChevronRight size={15} />
                       </div>

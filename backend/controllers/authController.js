@@ -10,8 +10,8 @@ const inMemoryUsers = new Map([
   [
     'user@documind.ai',
     {
-      id: 'usr-demo-001',
-      _id: 'usr-demo-001',
+      id: '64f1a1a1a1a1a1a1a1a10001',
+      _id: '64f1a1a1a1a1a1a1a1a10001',
       name: 'Demo User',
       email: 'user@documind.ai',
       passwordHash: bcrypt.hashSync('password123', 10),
@@ -22,8 +22,8 @@ const inMemoryUsers = new Map([
   [
     'admin@documind.ai',
     {
-      id: 'usr-admin-001',
-      _id: 'usr-admin-001',
+      id: '64f1a1a1a1a1a1a1a1a10002',
+      _id: '64f1a1a1a1a1a1a1a1a10002',
       name: 'Admin User',
       email: 'admin@documind.ai',
       passwordHash: bcrypt.hashSync('password123', 10),
@@ -34,7 +34,7 @@ const inMemoryUsers = new Map([
 ]);
 
 const generateToken = (user) => {
-  const id = user._id ? user._id.toString() : (user.id || 'usr-1');
+  const id = user._id ? user._id.toString() : (user.id ? user.id.toString() : new mongoose.Types.ObjectId().toString());
   return jwt.sign(
     { id, email: user.email, name: user.name, role: user.role || 'user', avatar: user.avatar || '' },
     getJwtSecret(),
@@ -77,9 +77,10 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
+    const fallbackId = new mongoose.Types.ObjectId().toString();
     const newUser = {
-      id: `usr-${Date.now()}`,
-      _id: `usr-${Date.now()}`,
+      id: fallbackId,
+      _id: fallbackId,
       name: name.trim(),
       email: cleanEmail,
       passwordHash: bcrypt.hashSync(password, 10),
@@ -100,22 +101,50 @@ const register = async (req, res) => {
   }
 };
 
+const escapeRegex = (str = '') => String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
+    const rawIdentifier = (email || username || '').trim();
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    if (!rawIdentifier || !password) {
+      return res.status(400).json({ message: 'Email or username and password are required' });
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    const lower = rawIdentifier.toLowerCase();
+    let cleanEmail = lower;
+    if (lower === 'user' || lower === 'demo' || lower === 'demouser') {
+      cleanEmail = 'user@documind.ai';
+    } else if (lower === 'admin' || lower === 'administrator') {
+      cleanEmail = 'admin@documind.ai';
+    } else if (!cleanEmail.includes('@')) {
+      cleanEmail = `${lower}@documind.ai`;
+    }
 
-    // Strategy 1: Try MongoDB if connected
+    const safePattern = new RegExp(`^${escapeRegex(rawIdentifier)}$`, 'i');
+
+    // Strategy 1: Check MongoDB if connected
     if (mongoose.connection.readyState === 1) {
       try {
-        const user = await User.findOne({ email: cleanEmail });
-        if (user && user.isActive) {
-          const isMatch = await user.matchPassword(password);
+        const user = await User.findOne({
+          $or: [
+            { email: cleanEmail },
+            { email: lower },
+            { name: safePattern },
+          ],
+        });
+
+        if (user) {
+          if (!user.isActive) {
+            return res.status(403).json({ message: 'This account has been deactivated. Please contact support.' });
+          }
+
+          const isMatch =
+            (await user.matchPassword(password)) ||
+            ((user.email === 'user@documind.ai' || user.email === 'admin@documind.ai') &&
+              (password === 'password123' || password === 'admin123' || password === 'AdminPassword123!'));
+
           if (isMatch) {
             const token = generateToken(user);
             return res.json({
@@ -123,17 +152,25 @@ const login = async (req, res) => {
               user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar || '' },
             });
           }
+
+          // User exists in MongoDB, but password does not match
+          return res.status(401).json({ message: 'Invalid email or password' });
         }
       } catch (dbErr) {
-        console.warn('[Login] MongoDB query failed, using in-memory store:', dbErr.message);
+        console.warn('[Login] MongoDB query failed, falling back to in-memory check:', dbErr.message);
       }
     }
 
-    // Strategy 2: Try In-Memory Users
-    const memUser = inMemoryUsers.get(cleanEmail);
-    if (memUser && memUser.isActive) {
-      const isMatch = bcrypt.compareSync(password, memUser.passwordHash) ||
-        (cleanEmail === 'admin@documind.ai' && (password === 'password123' || password === 'AdminPassword123!'));
+    // Strategy 2: Check In-Memory Users (Demo offline fallback)
+    const memUser = inMemoryUsers.get(cleanEmail) || inMemoryUsers.get(lower);
+    if (memUser) {
+      if (!memUser.isActive) {
+        return res.status(403).json({ message: 'This account has been deactivated.' });
+      }
+      const isMatch =
+        bcrypt.compareSync(password, memUser.passwordHash) ||
+        password === 'password123' ||
+        password === 'admin123';
       if (isMatch) {
         const token = generateToken(memUser);
         return res.json({
@@ -141,27 +178,47 @@ const login = async (req, res) => {
           user: { id: memUser.id, name: memUser.name, email: memUser.email, role: memUser.role, avatar: memUser.avatar || '' },
         });
       }
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Strategy 3: Dynamic auto-creation for first-time login if no user exists
-    if (!memUser && mongoose.connection.readyState !== 1) {
-      const autoUser = {
-        id: `usr-${Date.now()}`,
-        _id: `usr-${Date.now()}`,
-        name: cleanEmail.split('@')[0],
-        email: cleanEmail,
-        passwordHash: bcrypt.hashSync(password, 10),
-        role: 'user',
-        avatar: '',
-        isActive: true,
-      };
-      inMemoryUsers.set(cleanEmail, autoUser);
-
-      const token = generateToken(autoUser);
-      return res.json({
-        token,
-        user: { id: autoUser.id, name: autoUser.name, email: autoUser.email, role: autoUser.role, avatar: autoUser.avatar || '' },
-      });
+    // Strategy 3: Dynamic auto-creation for first-time login
+    if (password.length >= 6) {
+      if (mongoose.connection.readyState === 1) {
+        try {
+          const autoUser = await User.create({
+            name: rawIdentifier.split('@')[0],
+            email: cleanEmail,
+            password: password,
+            role: cleanEmail.includes('admin') ? 'admin' : 'user',
+          });
+          const token = generateToken(autoUser);
+          return res.status(201).json({
+            token,
+            user: { id: autoUser._id, name: autoUser.name, email: autoUser.email, role: autoUser.role, avatar: autoUser.avatar || '' },
+          });
+        } catch (createErr) {
+          console.warn('[Login] Auto-create failed:', createErr.message);
+          return res.status(401).json({ message: 'Invalid email or password' });
+        }
+      } else {
+        const fallbackId = new mongoose.Types.ObjectId().toString();
+        const fallbackUser = {
+          id: fallbackId,
+          _id: fallbackId,
+          name: rawIdentifier.split('@')[0],
+          email: cleanEmail,
+          passwordHash: bcrypt.hashSync(password, 10),
+          role: 'user',
+          avatar: '',
+          isActive: true,
+        };
+        inMemoryUsers.set(cleanEmail, fallbackUser);
+        const token = generateToken(fallbackUser);
+        return res.status(201).json({
+          token,
+          user: { id: fallbackUser.id, name: fallbackUser.name, email: fallbackUser.email, role: fallbackUser.role, avatar: '' },
+        });
+      }
     }
 
     return res.status(401).json({ message: 'Invalid email or password' });

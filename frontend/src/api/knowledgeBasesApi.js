@@ -7,14 +7,34 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+// ─── In-Memory Cache for Instant Section Switching ────────────────────────
+let kbCache = null;
+let kbCacheTime = 0;
+const KB_CACHE_TTL_MS = 25000; // 25 seconds TTL
+
+export const invalidateKnowledgeBasesCache = () => {
+  kbCache = null;
+  kbCacheTime = 0;
+};
+
 /**
  * Fetch all Knowledge Bases for the current user.
+ * Supports transparent in-memory caching so route transitions are instant (0ms).
+ * @param {boolean} forceRefresh - pass true to bypass cache
  */
-export const fetchKnowledgeBases = async () => {
+export const fetchKnowledgeBases = async (forceRefresh = false) => {
+  const now = Date.now();
+  if (!forceRefresh && kbCache && now - kbCacheTime < KB_CACHE_TTL_MS) {
+    return kbCache;
+  }
+
   const { data } = await axios.get(`${BASE_URL}/knowledge-bases`, {
     headers: getAuthHeaders(),
   });
-  return data.knowledgeBases || [];
+  const kbs = data.knowledgeBases || [];
+  kbCache = kbs;
+  kbCacheTime = Date.now();
+  return kbs;
 };
 
 /**
@@ -34,6 +54,7 @@ export const createKnowledgeBase = async (payload) => {
   const { data } = await axios.post(`${BASE_URL}/knowledge-bases`, payload, {
     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
   });
+  invalidateKnowledgeBasesCache();
   return data.knowledgeBase;
 };
 
@@ -44,6 +65,7 @@ export const updateKnowledgeBase = async (id, payload) => {
   const { data } = await axios.put(`${BASE_URL}/knowledge-bases/${id}`, payload, {
     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
   });
+  invalidateKnowledgeBasesCache();
   return data.knowledgeBase;
 };
 
@@ -54,6 +76,7 @@ export const deleteKnowledgeBase = async (id) => {
   const { data } = await axios.delete(`${BASE_URL}/knowledge-bases/${id}`, {
     headers: getAuthHeaders(),
   });
+  invalidateKnowledgeBasesCache();
   return data;
 };
 

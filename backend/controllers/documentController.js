@@ -92,8 +92,12 @@ const uploadDocument = async (req, res) => {
  */
 const getDocuments = async (req, res) => {
   try {
-    const docs = await Document.find({ owner: req.user._id })
-      .select('-chunks')
+    const ownerConditions = [{ owner: req.user._id }];
+    if (req.user.id && req.user.id !== String(req.user._id)) {
+      ownerConditions.push({ owner: req.user.id });
+    }
+    const docs = await Document.find({ $or: ownerConditions })
+      .select('-chunks -evidenceObjects -tables -figures')
       .sort({ createdAt: -1 });
     return res.json({ documents: docs });
   } catch (error) {
@@ -106,7 +110,11 @@ const getDocuments = async (req, res) => {
  */
 const getDocumentById = async (req, res) => {
   try {
-    const doc = await Document.findOne({ _id: req.params.id, owner: req.user._id }).select('-chunks');
+    const ownerConditions = [{ owner: req.user._id }];
+    if (req.user.id && req.user.id !== String(req.user._id)) {
+      ownerConditions.push({ owner: req.user.id });
+    }
+    const doc = await Document.findOne({ _id: req.params.id, $or: ownerConditions }).select('-chunks');
     if (!doc) return res.status(404).json({ message: 'Document not found' });
     return res.json({ document: doc });
   } catch (error) {

@@ -22,6 +22,7 @@ import {
 import Button from '../common/Button';
 import CitationList from './CitationList';
 import { exportToMarkdown, exportToJson, exportToCsv, printReportAsPdf } from '../../utils/exportUtils';
+import { safeString } from '../../utils/safeRender';
 
 // Helper to get context-aware tabs based on the research mode
 const getTabsForMode = (mode) => {
@@ -264,12 +265,12 @@ const ResearchStudioOutput = ({ report = {} }) => {
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {paperProfiles.map((p, idx) => (
                   <div key={idx} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-1.5 text-xs">
-                    <p className="font-bold text-slate-900 truncate">{p.title}</p>
+                    <p className="font-bold text-slate-900 truncate">{safeString(p.title)}</p>
                     <p className="text-[11px] text-slate-500">
-                      Authors: {p.authors?.join(', ') || 'N/A'} • {p.year || ''}
+                      Authors: {safeString(p.authors, 'N/A')} • {safeString(p.year)}
                     </p>
                     <p className="text-slate-700 line-clamp-2 text-[11px] leading-relaxed">
-                      {p.problemStatement || p.abstract}
+                      {safeString(p.problemStatement || p.abstract)}
                     </p>
                   </div>
                 ))}
@@ -354,7 +355,7 @@ const ResearchStudioOutput = ({ report = {} }) => {
                   <th className="p-3 font-bold text-slate-800 w-1/4">Aspect</th>
                   {paperProfiles.map((p) => (
                     <th key={p.documentId} className="p-3 font-bold text-slate-800 min-w-[180px]">
-                      <p className="truncate">{p.title || p.documentName}</p>
+                      <p className="truncate">{safeString(p.title || p.documentName)}</p>
                     </th>
                   ))}
                 </tr>
@@ -367,7 +368,7 @@ const ResearchStudioOutput = ({ report = {} }) => {
                     </td>
                     {paperProfiles.map((p) => (
                       <td key={p.documentId} className="p-3 text-slate-700 align-top leading-relaxed text-[11px]">
-                        {row.values?.[p.documentId] || 'Not reported in text'}
+                        {safeString(row.values?.[p.documentId], 'Not reported in text')}
                       </td>
                     ))}
                   </tr>

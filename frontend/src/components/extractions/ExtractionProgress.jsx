@@ -42,16 +42,16 @@ const ExtractionProgress = ({ extraction, compact = false }) => {
   const isFailed = status === 'FAILED';
 
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white shadow-xs ${compact ? 'p-4' : 'p-6 sm:p-8'}`}>
+    <div className={`rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs ${compact ? 'p-4' : 'p-6 sm:p-8'}`}>
       <div className="flex items-start gap-3">
-        <div className={`flex shrink-0 items-center justify-center rounded-xl ${compact ? 'h-9 w-9' : 'h-11 w-11'} ${isFailed ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'}`}>
+        <div className={`flex shrink-0 items-center justify-center rounded-xl ${compact ? 'h-9 w-9' : 'h-11 w-11'} ${isFailed ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400' : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'}`}>
           {isFailed ? <AlertCircle size={compact ? 18 : 22} /> : <Loader2 size={compact ? 18 : 22} className="animate-spin" />}
         </div>
         <div className="min-w-0">
-          <h2 className={`${compact ? 'text-sm' : 'text-lg'} font-bold text-slate-900`}>
+          <h2 className={`${compact ? 'text-sm' : 'text-lg'} font-bold text-slate-900 dark:text-white`}>
             {isFailed ? 'Extraction could not be completed' : 'Extracting information'}
           </h2>
-          <p className="mt-0.5 text-sm text-slate-500">
+          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
             {isFailed
               ? extraction?.errorMessage || 'Some document information could not be extracted. Please try again.'
               : processingStep}
@@ -69,13 +69,13 @@ const ExtractionProgress = ({ extraction, compact = false }) => {
               return (
                 <div key={stage.id} className="flex items-center gap-2">
                   {isComplete ? (
-                    <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+                    <CheckCircle2 size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
                   ) : isCurrent ? (
-                    <Loader2 size={16} className="shrink-0 animate-spin text-indigo-600" />
+                    <Loader2 size={16} className="shrink-0 animate-spin text-indigo-600 dark:text-indigo-400" />
                   ) : (
-                    <Circle size={16} className="shrink-0 text-slate-300" />
+                    <Circle size={16} className="shrink-0 text-slate-300 dark:text-slate-700" />
                   )}
-                  <span className={`text-xs font-semibold ${isComplete ? 'text-slate-700' : isCurrent ? 'text-indigo-700' : 'text-slate-400'}`}>
+                  <span className={`text-xs font-semibold ${isComplete ? 'text-slate-700 dark:text-slate-300' : isCurrent ? 'text-indigo-700 dark:text-indigo-400 font-bold' : 'text-slate-400 dark:text-slate-500'}`}>
                     {stage.label}
                   </span>
                 </div>
@@ -85,18 +85,18 @@ const ExtractionProgress = ({ extraction, compact = false }) => {
 
           {hasBatchProgress && (
             <div className="mt-6">
-              <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500">
+              <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
                 <span>Processed document batches</span>
                 <span>{Math.min(completedBatches, totalBatches)} of {totalBatches}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 <div className="h-full rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${batchPercent}%` }} />
               </div>
             </div>
           )}
 
           {!compact && !hasBatchProgress && (
-            <p className="mt-6 text-xs text-slate-400">
+            <p className="mt-6 text-xs text-slate-400 dark:text-slate-500">
               Progress updates appear as the document extraction service reports completed stages.
             </p>
           )}

@@ -12,30 +12,30 @@ import {
 
 function Contact() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
 
       {/* ================= HERO ================= */}
 
-      <section className="bg-linear-to-br from-indigo-50 via-white to-blue-50">
+      <section className="bg-linear-to-br from-indigo-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-b border-transparent dark:border-slate-850">
 
         <div className="mx-auto max-w-5xl px-6 py-20 text-center">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-600/20">
             <MessageSquare
               className="text-white"
               size={32}
             />
           </div>
 
-          <p className="mt-6 font-semibold text-indigo-600">
+          <p className="mt-6 font-semibold text-indigo-600 dark:text-indigo-400">
             CONTACT DOCUMIND-AI
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-bold sm:text-5xl text-slate-900 dark:text-white">
             Let's Talk About Your Project
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-slate-300">
             Have a question, suggestion, research idea, or need help
             with DOCUMIND-AI? Send us a message and we'll get back
             to you.
@@ -56,15 +56,15 @@ function Contact() {
 
           <div>
 
-            <p className="font-semibold text-indigo-600">
+            <p className="font-semibold text-indigo-600 dark:text-indigo-400">
               GET IN TOUCH
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               Contact Information
             </h2>
 
-            <p className="mt-5 leading-7 text-gray-600">
+            <p className="mt-5 leading-7 text-gray-600 dark:text-slate-300">
               Whether you're interested in AI research, enterprise
               document intelligence, or want to learn more about
               our platform, we'd love to hear from you.
@@ -109,15 +109,15 @@ function Contact() {
 
           <div className="lg:col-span-2">
 
-            <div className="rounded-2xl border bg-white p-6 shadow-lg sm:p-8">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-lg sm:p-8">
 
               <div className="mb-8">
 
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                   Send Us a Message
                 </h2>
 
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-gray-600 dark:text-slate-400">
                   Fill out the form below and we'll respond as soon
                   as possible.
                 </p>
@@ -134,7 +134,7 @@ function Contact() {
 
                     <label
                       htmlFor="name"
-                      className="mb-2 block text-sm font-semibold text-gray-700"
+                      className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300"
                     >
                       Full Name
                     </label>
@@ -143,7 +143,7 @@ function Contact() {
                       id="name"
                       type="text"
                       placeholder="Enter your name"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40"
                     />
 
                   </div>
@@ -153,7 +153,7 @@ function Contact() {
 
                     <label
                       htmlFor="email"
-                      className="mb-2 block text-sm font-semibold text-gray-700"
+                      className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300"
                     >
                       Email Address
                     </label>
@@ -162,7 +162,7 @@ function Contact() {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40"
                     />
 
                   </div>
@@ -175,7 +175,7 @@ function Contact() {
 
                   <label
                     htmlFor="subject"
-                    className="mb-2 block text-sm font-semibold text-gray-700"
+                    className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300"
                   >
                     Subject
                   </label>
@@ -184,7 +184,7 @@ function Contact() {
                     id="subject"
                     type="text"
                     placeholder="What would you like to discuss?"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40"
                   />
 
                 </div>
@@ -195,37 +195,37 @@ function Contact() {
 
                   <label
                     htmlFor="category"
-                    className="mb-2 block text-sm font-semibold text-gray-700"
+                    className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300"
                   >
                     Inquiry Type
                   </label>
 
                   <select
                     id="category"
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40"
                   >
 
-                    <option value="">
+                    <option value="" className="dark:bg-slate-800">
                       Select inquiry type
                     </option>
 
-                    <option value="general">
+                    <option value="general" className="dark:bg-slate-800">
                       General Question
                     </option>
 
-                    <option value="research">
+                    <option value="research" className="dark:bg-slate-800">
                       AI Research
                     </option>
 
-                    <option value="business">
+                    <option value="business" className="dark:bg-slate-800">
                       Business / Enterprise
                     </option>
 
-                    <option value="technical">
+                    <option value="technical" className="dark:bg-slate-800">
                       Technical Support
                     </option>
 
-                    <option value="feedback">
+                    <option value="feedback" className="dark:bg-slate-800">
                       Feedback / Suggestion
                     </option>
 
@@ -239,7 +239,7 @@ function Contact() {
 
                   <label
                     htmlFor="message"
-                    className="mb-2 block text-sm font-semibold text-gray-700"
+                    className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300"
                   >
                     Message
                   </label>
@@ -248,7 +248,7 @@ function Contact() {
                     id="message"
                     rows="6"
                     placeholder="Write your message here..."
-                    className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full resize-none rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40"
                   />
 
                 </div>
@@ -257,7 +257,7 @@ function Contact() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700 shadow-md shadow-indigo-600/20"
                 >
                   Send Message
                   <Send size={18} />
@@ -276,17 +276,17 @@ function Contact() {
 
       {/* ================= FAQ ================= */}
 
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-800 py-20">
 
         <div className="mx-auto max-w-5xl px-6">
 
           <div className="text-center">
 
-            <p className="font-semibold text-indigo-600">
+            <p className="font-semibold text-indigo-600 dark:text-indigo-400">
               FAQ
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               Frequently Asked Questions
             </h2>
 
@@ -339,7 +339,7 @@ function Contact() {
 
           <Link
             to="/register"
-            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-indigo-600 hover:bg-gray-100"
+            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-indigo-600 hover:bg-gray-100 shadow-lg"
           >
             Get Started
             <ArrowRight size={18} />
@@ -359,16 +359,16 @@ function ContactInfo({ icon, title, value }) {
   return (
     <div className="mt-7 flex items-start gap-4">
 
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
         {icon}
       </div>
 
       <div>
-        <h3 className="font-semibold">
+        <h3 className="font-semibold text-slate-900 dark:text-white">
           {title}
         </h3>
 
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
           {value}
         </p>
       </div>
@@ -382,23 +382,23 @@ function ContactInfo({ icon, title, value }) {
 
 function FAQ({ question, answer }) {
   return (
-    <details className="group rounded-xl border bg-white p-5">
+    <details className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
 
-      <summary className="cursor-pointer list-none font-semibold text-gray-900">
+      <summary className="cursor-pointer list-none font-semibold text-gray-900 dark:text-white">
         <div className="flex items-center justify-between">
 
           <span>
             {question}
           </span>
 
-          <span className="text-xl text-indigo-600 transition group-open:rotate-45">
+          <span className="text-xl text-indigo-600 dark:text-indigo-400 transition group-open:rotate-45">
             +
           </span>
 
         </div>
       </summary>
 
-      <p className="mt-4 leading-7 text-gray-600">
+      <p className="mt-4 leading-7 text-gray-600 dark:text-slate-300">
         {answer}
       </p>
 

@@ -14,7 +14,7 @@ const AgentCard = ({ agent, onRunAgent }) => {
   } = agent || {};
 
   return (
-    <div className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md flex flex-col justify-between space-y-4">
+    <div className="group relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition-all hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md flex flex-col justify-between space-y-4">
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white font-bold shadow-md group-hover:scale-105 transition-transform">
@@ -27,16 +27,16 @@ const AgentCard = ({ agent, onRunAgent }) => {
         </div>
 
         <div className="mt-4">
-          <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+          <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             {name}
           </h4>
-          <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="space-y-3 pt-3 border-t border-slate-100">
+      <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
         <div className="flex flex-wrap gap-1.5">
           {capabilities.map((cap, idx) => (
             <Badge key={idx} variant="slate">

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Calendar, CheckCircle2, Clipboard, Copy, Database, Download,
-  FileText, HardDrive, Layers, RefreshCw, Search, Tag, Trash2,
+  FileText, HardDrive, Layers, RefreshCw, Search, Sparkles, Tag, Trash2,
 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
@@ -115,16 +115,16 @@ const DocumentDetails = () => {
 
   return (
     <div className="space-y-6">
-      <Link to="/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-indigo-600">
+      <Link to="/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 transition hover:text-indigo-600 dark:hover:text-indigo-400">
         <ArrowLeft size={16} /> Back to Documents
       </Link>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs xl:flex-row xl:items-center xl:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md"><FileText size={28} /></div>
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><h1 className="break-all text-xl font-bold text-slate-900">{doc.name}</h1><Badge variant={statusVariant[doc.status] || 'slate'} icon={CheckCircle2}>{displayStatus}</Badge></div>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-2"><h1 className="break-all text-xl font-bold text-slate-900 dark:text-white">{doc.name}</h1><Badge variant={statusVariant[doc.status] || 'slate'} icon={CheckCircle2}>{displayStatus}</Badge></div>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
               <span className="inline-flex items-center gap-1"><Clipboard size={13} /> ID: {doc.id}</span>
               <span className="inline-flex items-center gap-1"><Calendar size={13} /> {doc.uploadedAt}</span>
             </div>
@@ -134,23 +134,23 @@ const DocumentDetails = () => {
           <Button variant="outline" size="sm" leftIcon={Copy} onClick={copyId}>{copied ? 'Copied' : 'Copy ID'}</Button>
           <Button variant="outline" size="sm" leftIcon={RefreshCw} loading={isReindexing} onClick={handleReindex}>Re-index</Button>
           <Button variant="primary" size="sm" leftIcon={Download} onClick={handleDownload}>Download</Button>
-          <Button variant="ghost" size="sm" leftIcon={Trash2} className="text-rose-600 hover:bg-rose-50 hover:text-rose-700" onClick={() => setIsDeleteOpen(true)}>Delete</Button>
+          <Button variant="ghost" size="sm" leftIcon={Trash2} className="text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-300" onClick={() => setIsDeleteOpen(true)}>Delete</Button>
         </div>
       </div>
 
-      {notice && <div role="status" className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"><CheckCircle2 size={17} /> {notice}</div>}
+      {notice && <div role="status" className="flex items-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm font-medium text-emerald-800 dark:text-emerald-300"><CheckCircle2 size={17} /> {notice}</div>}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">AI generated summary</h2>
-            <p className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">{doc.summary}</p>
+          <section className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">AI generated summary</h2>
+            <p className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 p-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{doc.summary}</p>
             <div className="flex flex-wrap gap-2">{doc.tags.map((tag) => <Badge key={tag} variant="indigo" icon={Tag}>{tag}</Badge>)}</div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-sm font-bold text-slate-900">Indexed content</h2><p className="mt-1 text-xs text-slate-500">Preview and search the chunks available to retrieval.</p></div><label className="relative block"><Search className="absolute left-3 top-2.5 text-slate-400" size={15} /><input value={chunkQuery} onChange={(e) => setChunkQuery(e.target.value)} placeholder="Search chunks..." className="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-xs outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 sm:w-52" /></label></div>
-            <div className="mt-5 space-y-3">{filteredChunks.length ? filteredChunks.map((chunk) => <article key={chunk.index} className="rounded-xl border border-slate-200 p-4"><div className="mb-2 flex items-center justify-between"><span className="text-xs font-bold text-indigo-600">Chunk {String(chunk.index).padStart(2, '0')}</span><span className="text-xs text-slate-500">Page {chunk.page} · {chunk.tokens} tokens</span></div><p className="text-sm leading-relaxed text-slate-700">{chunk.text}</p></article>) : <p className="py-6 text-center text-sm text-slate-500">No indexed chunks match “{chunkQuery}”.</p>}</div>
+          <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-sm font-bold text-slate-900 dark:text-white">Indexed content</h2><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Preview and search the chunks available to retrieval.</p></div><label className="relative block"><Search className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" size={15} /><input value={chunkQuery} onChange={(e) => setChunkQuery(e.target.value)} placeholder="Search chunks..." className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/50 sm:w-52" /></label></div>
+            <div className="mt-5 space-y-3">{filteredChunks.length ? filteredChunks.map((chunk) => <article key={chunk.index} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 p-4"><div className="mb-2 flex items-center justify-between"><span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">Chunk {String(chunk.index).padStart(2, '0')}</span><span className="text-xs text-slate-500 dark:text-slate-400">Page {chunk.page} · {chunk.tokens} tokens</span></div><p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{chunk.text}</p></article>) : <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">No indexed chunks match “{chunkQuery}”.</p>}</div>
           </section>
         </div>
 
@@ -159,47 +159,47 @@ const DocumentDetails = () => {
             processingStep={doc.processingStep} 
             status={doc.status === 'indexed' || doc.status === 'ready' ? 'completed' : doc.status} 
           />
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">Document properties</h2>
+          <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Document properties</h2>
             <dl className="mt-4 space-y-4 text-sm">
               <div className="flex items-start gap-3">
-                <Sparkles size={17} className="mt-0.5 text-purple-600" />
+                <Sparkles size={17} className="mt-0.5 text-purple-600 dark:text-purple-400" />
                 <div>
-                  <dt className="text-xs text-slate-500">Document Category (SRS Sec. 15)</dt>
-                  <dd className="font-semibold text-purple-900">
+                  <dt className="text-xs text-slate-500 dark:text-slate-400">Document Category (SRS Sec. 15)</dt>
+                  <dd className="font-semibold text-purple-900 dark:text-purple-300">
                     {doc.category || 'Other'} {doc.classificationConfidence ? `(${Math.round(doc.classificationConfidence * 100)}% confidence)` : ''}
                   </dd>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Database size={17} className="mt-0.5 text-indigo-500" />
+                <Database size={17} className="mt-0.5 text-indigo-500 dark:text-indigo-400" />
                 <div>
-                  <dt className="text-xs text-slate-500">Knowledge base</dt>
-                  <dd className="font-semibold text-slate-800">{doc.knowledgeBase}</dd>
+                  <dt className="text-xs text-slate-500 dark:text-slate-400">Knowledge base</dt>
+                  <dd className="font-semibold text-slate-800 dark:text-slate-200">{doc.knowledgeBase}</dd>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Layers size={17} className="mt-0.5 text-indigo-500" />
+                <Layers size={17} className="mt-0.5 text-indigo-500 dark:text-indigo-400" />
                 <div>
-                  <dt className="text-xs text-slate-500">Embedding model</dt>
-                  <dd className="font-semibold text-slate-800">{doc.embeddingModel}</dd>
+                  <dt className="text-xs text-slate-500 dark:text-slate-400">Embedding model</dt>
+                  <dd className="font-semibold text-slate-800 dark:text-slate-200">{doc.embeddingModel}</dd>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <HardDrive size={17} className="mt-0.5 text-indigo-500" />
+                <HardDrive size={17} className="mt-0.5 text-indigo-500 dark:text-indigo-400" />
                 <div>
-                  <dt className="text-xs text-slate-500">File</dt>
-                  <dd className="font-semibold text-slate-800">{doc.type} · {doc.size}</dd>
+                  <dt className="text-xs text-slate-500 dark:text-slate-400">File</dt>
+                  <dd className="font-semibold text-slate-800 dark:text-slate-200">{doc.type} · {doc.size}</dd>
                 </div>
               </div>
             </dl>
           </section>
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs"><h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">Activity</h2><ol className="mt-4 space-y-4 border-l border-slate-200 pl-4">{doc.activity.map((item) => <li key={item.label} className="relative"><span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" /><p className="text-xs font-semibold text-slate-800">{item.label}</p><p className="mt-0.5 text-xs text-slate-500">{item.time}</p></li>)}</ol></section>
+          <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs"><h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Activity</h2><ol className="mt-4 space-y-4 border-l border-slate-200 dark:border-slate-800 pl-4">{doc.activity.map((item) => <li key={item.label} className="relative"><span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500" /><p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{item.label}</p><p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{item.time}</p></li>)}</ol></section>
         </aside>
       </div>
 
       <Modal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} title="Delete document" subtitle="This action removes the file and its indexed vectors.">
-        <p className="text-sm leading-relaxed text-slate-600">Are you sure you want to delete <span className="font-semibold text-slate-900">{doc.name}</span>? This cannot be undone.</p>
+        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">Are you sure you want to delete <span className="font-semibold text-slate-900 dark:text-white">{doc.name}</span>? This cannot be undone.</p>
         <div className="mt-6 flex justify-end gap-3"><Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button><Button variant="danger" leftIcon={Trash2} onClick={handleDelete}>Delete document</Button></div>
       </Modal>
     </div>

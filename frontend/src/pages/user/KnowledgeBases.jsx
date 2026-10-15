@@ -156,14 +156,14 @@ const KnowledgeBases = () => {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-purple-600">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
             <Database size={16} />
             <span>Vector Stores</span>
           </div>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
             Knowledge Bases
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Group related documents into isolated vector indexes for context-aware RAG search and research.
           </p>
         </div>
@@ -200,7 +200,7 @@ const KnowledgeBases = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
         <div className="w-full max-w-md">
           <Input
             placeholder="Search knowledge bases by name or domain..."
@@ -209,14 +209,14 @@ const KnowledgeBases = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="text-xs font-medium text-slate-500 hidden sm:block">
+        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
           {filteredKbs.length} Knowledge Base{filteredKbs.length === 1 ? '' : 's'}
         </div>
       </div>
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center gap-2 text-xs font-semibold text-rose-700 bg-rose-50 p-3 rounded-xl border border-rose-200">
+        <div className="flex items-center gap-2 text-xs font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 p-3 rounded-xl border border-rose-200 dark:border-rose-900/50">
           <AlertCircle size={16} />
           <span>{error}</span>
         </div>
@@ -226,14 +226,14 @@ const KnowledgeBases = () => {
       {loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-56 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs animate-pulse">
+            <div key={n} className="h-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs animate-pulse">
               <div className="flex justify-between">
-                <div className="h-12 w-12 rounded-xl bg-slate-100" />
-                <div className="h-6 w-20 rounded-full bg-slate-100" />
+                <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800" />
+                <div className="h-6 w-20 rounded-full bg-slate-100 dark:bg-slate-800" />
               </div>
               <div className="mt-4 space-y-2">
-                <div className="h-5 w-3/4 rounded bg-slate-100" />
-                <div className="h-4 w-full rounded bg-slate-100" />
+                <div className="h-5 w-3/4 rounded bg-slate-100 dark:bg-slate-800" />
+                <div className="h-4 w-full rounded bg-slate-100 dark:bg-slate-800" />
               </div>
             </div>
           ))}
@@ -306,11 +306,11 @@ const KnowledgeBases = () => {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-slate-700 dark:text-slate-300">
             Are you sure you want to delete{' '}
-            <strong className="text-slate-900">{deleteKb?.name}</strong>?
+            <strong className="text-slate-900 dark:text-white">{deleteKb?.name}</strong>?
           </p>
-          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-800">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/30 p-3 text-xs text-amber-800 dark:text-amber-400">
             <strong>Note:</strong> Your documents will <strong>not</strong> be deleted. They will remain safely in your global platform Documents library.
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -338,21 +338,21 @@ const KnowledgeBases = () => {
         size="md"
       >
         <div className="space-y-4 py-1">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-50 text-purple-900 border border-purple-200">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-900/50">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-600 text-white">
               <CheckCircle2 size={22} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900">
+              <p className="text-xs font-bold text-slate-900 dark:text-white">
                 Would you like to populate this Knowledge Base now?
               </p>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                 Upload new files or select existing documents from your library to begin building its vector collection.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
             <Button
               variant="outline"
               size="sm"

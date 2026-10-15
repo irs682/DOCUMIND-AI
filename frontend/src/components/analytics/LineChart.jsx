@@ -11,8 +11,8 @@ const mockPoints = [
 
 const LineChart = ({ title = 'Embedding Latency Trend (ms)', points = mockPoints }) => {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">{title}</h4>
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</h4>
 
       <div className="h-36 w-full relative flex items-end justify-between px-2">
         <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
@@ -25,9 +25,9 @@ const LineChart = ({ title = 'Embedding Latency Trend (ms)', points = mockPoints
         </svg>
         {points.map((p, i) => (
           <div key={i} className="z-10 flex flex-col items-center gap-1">
-            <span className="text-[10px] font-bold text-slate-700">{p.val}ms</span>
-            <div className="h-2 w-2 rounded-full bg-indigo-600 ring-4 ring-indigo-100" />
-            <span className="text-[10px] text-slate-400 mt-2">{p.label}</span>
+            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{p.val}ms</span>
+            <div className="h-2 w-2 rounded-full bg-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-950/60" />
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">{p.label}</span>
           </div>
         ))}
       </div>

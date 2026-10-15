@@ -27,7 +27,7 @@ const plans = [
 
 const Pricing = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Hero Section */}
       <section className="bg-linear-to-br from-slate-900 via-slate-800 to-indigo-900 px-6 py-20 sm:py-32 text-white">
         <div className="mx-auto max-w-7xl text-center">
@@ -46,7 +46,7 @@ const Pricing = () => {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="grid gap-8 lg:grid-cols-3">
           {plans.map((plan) => (
-            <div key={plan.name} className={`relative rounded-3xl overflow-hidden transition ${plan.featured ? 'border-2 border-indigo-500 bg-white shadow-2xl scale-105 lg:scale-100' : 'border border-slate-200 bg-white shadow-sm'}`}>
+            <div key={plan.name} className={`relative rounded-3xl overflow-hidden transition ${plan.featured ? 'border-2 border-indigo-500 bg-white dark:bg-slate-900 shadow-2xl scale-105 lg:scale-100' : 'border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm'}`}>
               {plan.featured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                   <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-xs font-bold text-white">
@@ -56,27 +56,27 @@ const Pricing = () => {
                 </div>
               )}
               <div className="p-8 sm:p-10">
-                <h2 className="text-2xl font-bold text-slate-900">{plan.name}</h2>
-                <p className="mt-2 text-sm text-slate-600">{plan.description}</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{plan.name}</h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{plan.description}</p>
                 
                 <div className="mt-8 flex items-baseline gap-1">
-                  <span className="text-5xl font-bold text-slate-900">{plan.price}</span>
-                  {plan.price !== 'Custom' && <span className="text-slate-600">/month</span>}
+                  <span className="text-5xl font-bold text-slate-900 dark:text-white">{plan.price}</span>
+                  {plan.price !== 'Custom' && <span className="text-slate-600 dark:text-slate-400">/month</span>}
                 </div>
 
                 <Link to="/register" className={`mt-8 block w-full rounded-lg px-4 py-3 text-center text-sm font-bold transition ${
                   plan.featured
                     ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg'
-                    : 'border-2 border-slate-300 text-slate-700 hover:bg-slate-50'
+                    : 'border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}>
                   Get Started
                 </Link>
 
-                <div className="mt-8 space-y-4 border-t border-slate-200 pt-8">
+                <div className="mt-8 space-y-4 border-t border-slate-200 dark:border-slate-800 pt-8">
                   {plan.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-green-600" />
-                      <span className="text-sm text-slate-700">{feature}</span>
+                      <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-green-600 dark:text-green-400" />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -87,11 +87,11 @@ const Pricing = () => {
       </section>
 
       {/* FAQ */}
-      <section className="bg-slate-50 px-6 py-20">
+      <section className="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800/80 px-6 py-20">
         <div className="mx-auto max-w-3xl">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">Frequently asked questions</h2>
-            <p className="mt-4 text-slate-600">Have questions about our pricing?</p>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Frequently asked questions</h2>
+            <p className="mt-4 text-slate-600 dark:text-slate-400">Have questions about our pricing?</p>
           </div>
           <div className="mt-12 space-y-4">
             {[
@@ -100,9 +100,9 @@ const Pricing = () => {
               { q: "What payment methods do you accept?", a: "We accept all major credit cards, PayPal, and bank transfers for enterprise accounts." },
               { q: "Is there a contract?", a: "No contracts. You can cancel your subscription anytime with no penalties." },
             ].map(({ q, a }) => (
-              <div key={q} className="rounded-lg border border-slate-200 bg-white p-6">
-                <h3 className="font-semibold text-slate-900">{q}</h3>
-                <p className="mt-2 text-sm text-slate-600">{a}</p>
+              <div key={q} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+                <h3 className="font-semibold text-slate-900 dark:text-white">{q}</h3>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{a}</p>
               </div>
             ))}
           </div>

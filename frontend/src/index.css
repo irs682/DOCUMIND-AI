@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* Disable dark mode so system prefers-color-scheme never activates dark styles */
+@custom-variant dark (&:where(.never-match-dark-mode));
 
 @layer base {
   :root {
@@ -25,29 +26,16 @@
     --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .dark {
-    --bg-canvas: #090d16;
-    --bg-surface: #0f172a;
-    --bg-surface-elevated: #162036;
-    --bg-subtle: #1e293b;
-    --border-subtle: #1e293b;
-    --border-card: #24324c;
-    --border-active: #818cf8;
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-  }
-
   body {
     background-color: var(--bg-canvas);
     color: var(--text-primary);
+    transition: background-color 150ms ease, color 150ms ease;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
 
 /* ── Keyframes & Animations ─────────────────────────────────────────── */
 @keyframes fadeIn {
@@ -182,6 +170,5 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
-    transform: none !important;
   }
 }

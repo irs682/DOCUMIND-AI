@@ -11,8 +11,8 @@ const SearchBar = ({ query, onChange, onSearch, searchMode, onModeChange }) => {
 
   return (
     <div className="space-y-3">
-      <div className="relative flex items-center shadow-lg rounded-2xl bg-white border border-slate-200 p-1.5 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-200 transition">
-        <div className="pl-3.5 text-slate-400">
+      <div className="relative flex items-center shadow-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-200 dark:focus-within:ring-indigo-900/50 transition">
+        <div className="pl-3.5 text-slate-400 dark:text-slate-500">
           <Search size={22} />
         </div>
 
@@ -22,13 +22,13 @@ const SearchBar = ({ query, onChange, onSearch, searchMode, onModeChange }) => {
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Search documents by semantic meaning, exact phrase, or concepts..."
-          className="w-full bg-transparent px-3 py-2 text-base text-slate-900 placeholder-slate-400 focus:outline-none"
+          className="w-full bg-transparent px-3 py-2 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
         />
 
         {query && (
           <button
             onClick={() => onChange('')}
-            className="p-1 text-slate-400 hover:text-slate-600 mr-2"
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 mr-2"
           >
             <X size={18} />
           </button>
@@ -42,17 +42,17 @@ const SearchBar = ({ query, onChange, onSearch, searchMode, onModeChange }) => {
       {/* Mode Selector */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-slate-500 uppercase tracking-wider text-[11px]">
+          <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
             Retrieval Strategy:
           </span>
-          <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+          <div className="flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={() => onModeChange('hybrid')}
               className={`rounded-lg px-3 py-1 font-semibold transition ${
                 searchMode === 'hybrid'
-                  ? 'bg-white text-indigo-600 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               ⚡ Hybrid (Dense + Sparse)
@@ -62,8 +62,8 @@ const SearchBar = ({ query, onChange, onSearch, searchMode, onModeChange }) => {
               onClick={() => onModeChange('semantic')}
               className={`rounded-lg px-3 py-1 font-semibold transition ${
                 searchMode === 'semantic'
-                  ? 'bg-white text-indigo-600 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               🧠 Semantic Vector
@@ -73,8 +73,8 @@ const SearchBar = ({ query, onChange, onSearch, searchMode, onModeChange }) => {
               onClick={() => onModeChange('keyword')}
               className={`rounded-lg px-3 py-1 font-semibold transition ${
                 searchMode === 'keyword'
-                  ? 'bg-white text-indigo-600 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               🔤 Keyword (BM25)

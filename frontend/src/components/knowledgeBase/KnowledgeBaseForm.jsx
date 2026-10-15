@@ -34,7 +34,7 @@ const KnowledgeBaseForm = ({ initialValues, onSubmit, onCancel, loading = false 
       />
 
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
           Description
         </label>
         <textarea
@@ -42,18 +42,18 @@ const KnowledgeBaseForm = ({ initialValues, onSubmit, onCancel, loading = false 
           placeholder="Brief description of documents stored in this knowledge base..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 bg-white p-3 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900/40"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
           Embedding Model
         </label>
         <select
           value={embeddingModel}
           onChange={(e) => setEmbeddingModel(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900/40"
         >
           <option value="text-embedding-3-small">OpenAI text-embedding-3-small (1536d)</option>
           <option value="text-embedding-3-large">OpenAI text-embedding-3-large (3072d)</option>
@@ -62,7 +62,7 @@ const KnowledgeBaseForm = ({ initialValues, onSubmit, onCancel, loading = false 
       </div>
 
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
           Access Permission
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -71,12 +71,12 @@ const KnowledgeBaseForm = ({ initialValues, onSubmit, onCancel, loading = false 
             onClick={() => setIsPrivate(true)}
             className={`rounded-xl border p-3.5 text-left text-xs font-semibold transition ${
               isPrivate
-                ? 'border-indigo-600 bg-indigo-50/50 text-indigo-900 ring-2 ring-indigo-500/20'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             <div className="font-bold">🔒 Private</div>
-            <div className="mt-1 text-slate-500 font-normal">Only you can query and access</div>
+            <div className="mt-1 text-slate-500 dark:text-slate-400 font-normal">Only you can query and access</div>
           </button>
 
           <button
@@ -84,17 +84,17 @@ const KnowledgeBaseForm = ({ initialValues, onSubmit, onCancel, loading = false 
             onClick={() => setIsPrivate(false)}
             className={`rounded-xl border p-3.5 text-left text-xs font-semibold transition ${
               !isPrivate
-                ? 'border-indigo-600 bg-indigo-50/50 text-indigo-900 ring-2 ring-indigo-500/20'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             <div className="font-bold">🌐 Team Shared</div>
-            <div className="mt-1 text-slate-500 font-normal">All organization members have access</div>
+            <div className="mt-1 text-slate-500 dark:text-slate-400 font-normal">All organization members have access</div>
           </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

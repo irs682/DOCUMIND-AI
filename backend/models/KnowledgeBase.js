@@ -20,7 +20,7 @@ const knowledgeBaseSchema = new mongoose.Schema(
       default: 'text-embedding-3-small',
     },
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'User',
       required: true,
       index: true,

@@ -48,7 +48,7 @@ const features = [
 
 const Features = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Hero Section */}
       <section className="bg-linear-to-br from-indigo-600 via-indigo-700 to-slate-900 px-6 py-20 sm:py-32 text-white">
         <div className="mx-auto max-w-6xl">
@@ -73,12 +73,12 @@ const Features = () => {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition hover:-translate-y-1">
-                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${feature.bg} ${feature.color}`}>
+              <div key={feature.title} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm hover:shadow-md transition hover:-translate-y-1">
+                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${feature.bg} dark:bg-slate-800 ${feature.color}`}>
                   <Icon size={24} />
                 </div>
-                <h2 className="mt-5 text-lg font-bold text-slate-900">{feature.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{feature.description}</p>
+                <h2 className="mt-5 text-lg font-bold text-slate-900 dark:text-white">{feature.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">{feature.description}</p>
               </div>
             );
           })}
@@ -86,14 +86,14 @@ const Features = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-slate-50 px-6 py-20">
+      <section className="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-150 dark:border-slate-800 px-6 py-20">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-3xl bg-white p-8 sm:p-12 shadow-lg border border-slate-200">
+          <div className="rounded-3xl bg-white dark:bg-slate-900 p-8 sm:p-12 shadow-lg border border-slate-200 dark:border-slate-800">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">Ready to get started?</p>
-                <h3 className="mt-2 text-3xl font-bold text-slate-900">Transform your documents with AI.</h3>
-                <p className="mt-3 text-slate-600">Join teams already using DOCUMIND-AI to unlock insights from their documents.</p>
+                <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Ready to get started?</p>
+                <h3 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Transform your documents with AI.</h3>
+                <p className="mt-3 text-slate-600 dark:text-slate-400">Join teams already using DOCUMIND-AI to unlock insights from their documents.</p>
               </div>
               <Link to="/register" className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-8 py-3 font-semibold text-white hover:bg-indigo-700 whitespace-nowrap shadow-lg">
                 Create free account <ArrowRight size={18} />

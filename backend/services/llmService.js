@@ -350,15 +350,28 @@ const streamOpenRouter = async ({
  * Execute chat completion using configured OpenRouter model.
  */
 const executeCompletion = async (
-  messages,
-  {
+  messagesOrOptions,
+  options = {}
+) => {
+  let messages = [];
+  let opts = {};
+
+  if (Array.isArray(messagesOrOptions)) {
+    messages = messagesOrOptions;
+    opts = options || {};
+  } else if (messagesOrOptions && typeof messagesOrOptions === "object") {
+    messages = messagesOrOptions.messages || [];
+    opts = { ...messagesOrOptions, ...options };
+  }
+
+  const {
     modelType = "main",
     temperature = 0.1,
     maxTokens = 2048,
     task = "document_qa",
-  } = {}
-) => {
-  const model = modelType === "fast" ? getFastModel() : getMainModel();
+  } = opts;
+
+  const model = opts.model || (modelType === "fast" ? getFastModel() : getMainModel());
   return callOpenRouter({
     messages,
     model,

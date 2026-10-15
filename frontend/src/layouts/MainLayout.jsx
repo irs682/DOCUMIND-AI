@@ -6,9 +6,8 @@ import Sidebar from '../components/layout/Sidebar';
 import CommandPalette from '../components/common/CommandPalette';
 import NewProjectModal from '../components/common/NewProjectModal';
 import { useAuthContext } from '../context/AuthContext';
-import { Menu, LogOut, Sun, Moon } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { getAvatarUrl } from '../utils/avatar';
-import { useThemeContext } from '../context/ThemeContext';
 
 const publicNavItems = [
   { label: 'Home', to: '/' },
@@ -21,7 +20,6 @@ const publicNavItems = [
 
 const MainLayout = () => {
   const { user, logout } = useAuthContext();
-  const { theme, toggleTheme } = useThemeContext();
   const location = useLocation();
 
   // Collapsible sidebar state & modals
@@ -92,15 +90,6 @@ const MainLayout = () => {
             </nav>
 
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
-                aria-label="Toggle theme"
-              >
-                {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
-              </button>
               <Link
                 to="/login"
                 className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition"
@@ -161,8 +150,8 @@ const MainLayout = () => {
           </div>
         </div>
 
-        {/* Dynamic Page Outlet with smooth entrance transition */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in animate-slide-up">
+        {/* Dynamic Page Outlet with instant rendering */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

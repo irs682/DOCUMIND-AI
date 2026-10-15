@@ -81,14 +81,14 @@ const Search = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
           <SearchIcon size={16} />
           <span>Vector & Hybrid Retrieval</span>
         </div>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
           Semantic Document Search
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Find exact passages, semantic concepts, and data across all knowledge bases.
         </p>
       </div>
@@ -119,7 +119,7 @@ const Search = () => {
 
         {/* Right Search Results */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-500 px-1">
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
             <span>Showing {filteredResults.length} matching vector chunks</span>
             <span>Latency: 42ms</span>
           </div>

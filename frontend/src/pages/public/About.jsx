@@ -13,27 +13,27 @@ import {
 
 function About() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
 
       {/* ================= HERO ================= */}
 
-      <section className="bg-linear-to-br from-indigo-50 to-white">
+      <section className="bg-linear-to-br from-indigo-50 to-white dark:from-slate-900 dark:to-slate-950 border-b border-transparent dark:border-slate-850">
 
         <div className="mx-auto max-w-5xl px-6 py-20 text-center">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-600/20">
             <Brain className="text-white" size={32} />
           </div>
 
-          <p className="mt-6 font-semibold text-indigo-600">
+          <p className="mt-6 font-semibold text-indigo-600 dark:text-indigo-400">
             ABOUT DOCUMIND-AI
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-bold sm:text-5xl text-slate-900 dark:text-white">
             Intelligent Document Understanding
           </h1>
 
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-gray-600">
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-gray-600 dark:text-slate-300">
             DOCUMIND-AI is an AI-powered document intelligence platform
             designed to help researchers, organizations, and businesses
             transform large amounts of unstructured information into
@@ -53,21 +53,21 @@ function About() {
 
           <div>
 
-            <p className="font-semibold text-red-600">
+            <p className="font-semibold text-red-600 dark:text-red-400">
               THE PROBLEM
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               Information is Growing Faster Than People Can Process It
             </h2>
 
-            <p className="mt-5 leading-8 text-gray-600">
+            <p className="mt-5 leading-8 text-gray-600 dark:text-slate-300">
               Organizations and researchers work with thousands of
               documents, reports, research papers, manuals, contracts,
               and datasets.
             </p>
 
-            <p className="mt-4 leading-8 text-gray-600">
+            <p className="mt-4 leading-8 text-gray-600 dark:text-slate-300">
               Traditional document management systems mainly store
               files. They do not understand the actual meaning of
               the information inside those files.
@@ -76,9 +76,9 @@ function About() {
           </div>
 
 
-          <div className="rounded-2xl bg-gray-50 p-8">
+          <div className="rounded-2xl bg-gray-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
 
-            <h3 className="text-xl font-bold">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
               Common Challenges
             </h3>
 
@@ -102,21 +102,21 @@ function About() {
 
       {/* ================= SOLUTION ================= */}
 
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-800 py-20">
 
         <div className="mx-auto max-w-7xl px-6">
 
           <div className="mx-auto max-w-3xl text-center">
 
-            <p className="font-semibold text-indigo-600">
+            <p className="font-semibold text-indigo-600 dark:text-indigo-400">
               OUR SOLUTION
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               From File Storage to Intelligent Knowledge
             </h2>
 
-            <p className="mt-5 text-gray-600">
+            <p className="mt-5 text-gray-600 dark:text-slate-300">
               DOCUMIND-AI uses modern Artificial Intelligence
               technologies to understand and retrieve knowledge
               from documents.
@@ -274,11 +274,11 @@ function Problem({ text }) {
   return (
     <div className="flex items-center gap-3">
 
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-600">
+      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-xs font-bold">
         ✕
       </div>
 
-      <p className="text-gray-600">
+      <p className="text-gray-600 dark:text-slate-300">
         {text}
       </p>
 
@@ -289,17 +289,17 @@ function Problem({ text }) {
 
 function Technology({ icon, title, description }) {
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
 
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
         {icon}
       </div>
 
-      <h3 className="mt-5 text-lg font-bold">
+      <h3 className="mt-5 text-lg font-bold text-slate-900 dark:text-white">
         {title}
       </h3>
 
-      <p className="mt-3 text-sm leading-6 text-gray-600">
+      <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-slate-400">
         {description}
       </p>
 
@@ -310,17 +310,17 @@ function Technology({ icon, title, description }) {
 
 function InfoCard({ icon, title, text }) {
   return (
-    <div className="rounded-xl border bg-white p-7 text-center shadow-sm">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-7 text-center shadow-sm">
 
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
         {icon}
       </div>
 
-      <h3 className="mt-5 text-xl font-bold">
+      <h3 className="mt-5 text-xl font-bold text-slate-900 dark:text-white">
         {title}
       </h3>
 
-      <p className="mt-3 leading-7 text-gray-600">
+      <p className="mt-3 leading-7 text-gray-600 dark:text-slate-400">
         {text}
       </p>
 
@@ -337,7 +337,7 @@ function Tech({ name, category }) {
         {category}
       </p>
 
-      <h3 className="mt-2 font-semibold">
+      <h3 className="mt-2 font-semibold text-white">
         {name}
       </h3>
 

@@ -3,8 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search,
   Plus,
-  Sun,
-  Moon,
   HelpCircle,
   User,
   LogOut,
@@ -14,13 +12,11 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
-import { useThemeContext } from '../../context/ThemeContext';
 import { getAvatarUrl } from '../../utils/avatar';
 import NotificationCenter from '../common/NotificationCenter';
 
 const Navbar = ({ onOpenCommandPalette, onOpenNewProject }) => {
   const { user, logout } = useAuthContext();
-  const { theme, toggleTheme } = useThemeContext();
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const profileRef = useRef(null);
@@ -80,21 +76,6 @@ const Navbar = ({ onOpenCommandPalette, onOpenNewProject }) => {
 
           {/* Notifications Center */}
           <NotificationCenter />
-
-          {/* Theme Toggle (Dark / Light) */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            aria-label="Toggle Theme"
-          >
-            {theme === 'dark' ? (
-              <Sun size={18} className="text-amber-400" />
-            ) : (
-              <Moon size={18} />
-            )}
-          </button>
 
           {/* Help Menu */}
           <div className="relative" ref={helpRef}>
@@ -209,21 +190,6 @@ const Navbar = ({ onOpenCommandPalette, onOpenNewProject }) => {
                     </Link>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      toggleTheme();
-                    }}
-                    className="w-full flex items-center justify-between px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {theme === 'dark' ? <Moon size={15} className="text-amber-400" /> : <Sun size={15} className="text-indigo-500" />}
-                      <span>Appearance</span>
-                    </div>
-                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full capitalize">
-                      {theme}
-                    </span>
-                  </button>
                 </div>
 
                 <div className="pt-1 border-t border-slate-100 dark:border-slate-800">

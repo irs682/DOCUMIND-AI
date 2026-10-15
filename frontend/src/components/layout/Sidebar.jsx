@@ -26,14 +26,15 @@ const Sidebar = ({ isCollapsed, onToggleCollapse, mobileOpen, onCloseMobile }) =
   const [projectCount, setProjectCount] = useState(0);
   const [documentCount, setDocumentCount] = useState(0);
 
-  // Fetch real counts for badge counters
+  // Fetch real counts for badge counters on mount and when mutations occur
   useEffect(() => {
     let isMounted = true;
-    const fetchCounts = async () => {
+    const fetchCounts = async (force = false) => {
+      if (!user) return;
       try {
         const [projRes, docs] = await Promise.allSettled([
-          researchApi.getProjects(),
-          fetchDocuments(),
+          researchApi.getProjects(force),
+          fetchDocuments(force),
         ]);
         if (isMounted) {
           if (projRes.status === 'fulfilled' && projRes.value?.data?.projects) {
@@ -47,11 +48,22 @@ const Sidebar = ({ isCollapsed, onToggleCollapse, mobileOpen, onCloseMobile }) =
         console.warn('Could not fetch sidebar counts:', err);
       }
     };
+
     fetchCounts();
+
+    // Event listener for instantaneous count updates on create/delete/upload
+    const handleRefresh = () => fetchCounts(true);
+    window.addEventListener('documind:refresh-counts', handleRefresh);
+
+    // Periodic gentle refresh every 60s
+    const interval = setInterval(() => fetchCounts(false), 60000);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('documind:refresh-counts', handleRefresh);
+      clearInterval(interval);
     };
-  }, [location.pathname]);
+  }, [user]);
 
   const navGroups = [
     {

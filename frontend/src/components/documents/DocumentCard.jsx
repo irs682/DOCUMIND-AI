@@ -32,9 +32,9 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
   const canExtract = ['ready', 'indexed'].includes(String(status).toLowerCase());
 
   return (
-    <div className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md">
+    <div className="group relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
           <FileText size={24} />
         </div>
 
@@ -42,14 +42,14 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer"
           >
             <MoreVertical size={18} />
           </button>
 
           {menuOpen && (
             <div
-              className="absolute right-0 top-8 z-10 w-44 rounded-xl border border-slate-100 bg-white py-1.5 shadow-xl"
+              className="absolute right-0 top-8 z-10 w-44 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-850 py-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100"
               onMouseLeave={() => setMenuOpen(false)}
             >
               {onPreview && (
@@ -58,7 +58,7 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
                     setMenuOpen(false);
                     onPreview(document);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   <Eye size={15} />
                   Preview & Chunks
@@ -71,10 +71,10 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
                     setMenuOpen(false);
                     onExtract(document);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45 transition cursor-pointer"
                   title={canExtract ? 'Extract structured information' : 'Available when document processing is complete'}
                 >
-                  <Sparkles size={15} className="text-indigo-500" />
+                  <Sparkles size={15} className="text-indigo-500 dark:text-indigo-400" />
                   Extract Information
                 </button>
               )}
@@ -83,7 +83,7 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
                   setMenuOpen(false);
                   navigate(`/compare?docA=${docId}`);
                 }}
-                className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <GitCompare size={15} />
                 Compare with...
@@ -94,7 +94,7 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
                     setMenuOpen(false);
                     onDownload(document);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   <Download size={15} />
                   Download File
@@ -106,7 +106,7 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
                     setMenuOpen(false);
                     onDelete(id);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
                 >
                   <Trash2 size={15} />
                   Delete Document
@@ -118,21 +118,21 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
       </div>
 
       <div className="mt-4">
-        <h4 className="font-bold text-slate-900 truncate text-sm" title={name}>
+        <h4 className="font-bold text-slate-900 dark:text-white truncate text-sm" title={name}>
           {name}
         </h4>
-        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <span>{size}</span>
           <span>•</span>
           <span>{uploadedAt}</span>
         </div>
         {document?.category && (
           <div className="mt-2.5">
-            <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-700 border border-purple-200">
-              <Sparkles size={10} className="text-purple-600" />
+            <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+              <Sparkles size={10} className="text-purple-600 dark:text-purple-400" />
               <span>{document.category}</span>
               {document.classificationConfidence && (
-                <span className="text-[9px] text-purple-500 font-normal">
+                <span className="text-[9px] text-purple-500 dark:text-purple-400 font-normal">
                   {Math.round(document.classificationConfidence * 100)}%
                 </span>
               )}
@@ -141,14 +141,14 @@ const DocumentCard = ({ document, onPreview, onDelete, onDownload, onExtract }) 
         )}
       </div>
 
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <Badge variant={statusVariants[status] || 'slate'}>
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Badge>
 
-        <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
           <span className="flex items-center gap-1">
-            <Layers size={13} className="text-slate-400" />
+            <Layers size={13} className="text-slate-400 dark:text-slate-500" />
             {chunksCount} chunks
           </span>
         </div>

@@ -19,6 +19,7 @@ import {
   Info,
 } from 'lucide-react';
 import { parseAndValidateResults, normalizeResult } from '../../../utils/csvResultParser';
+import ResearchEvidenceDashboard from '../ResearchEvidenceDashboard';
 
 const Step9Results = ({
   project,
@@ -258,6 +259,13 @@ const Step9Results = ({
           </button>
         </div>
       )}
+
+      {/* Canonical 6-Dimension Research Evidence Dashboard */}
+      <ResearchEvidenceDashboard
+        project={project}
+        onProjectUpdated={onUpdateProject}
+        onNavigateToStep={() => {}}
+      />
 
       {/* Mandatory Anti-Fabrication Notice */}
       {userResults.length === 0 ? (

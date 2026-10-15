@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus,
   Loader2,
+  Maximize2,
+  Minimize2,
+  Sparkles,
+  Bot,
 } from 'lucide-react';
 import WorkspaceStepper from './WorkspaceStepper';
 import Step1AddPapers from './Step1AddPapers';
@@ -15,6 +19,7 @@ import Step8Benchmarks from './Step8Benchmarks';
 import Step9Results from './Step9Results';
 import Step10Discussion from './Step10Discussion';
 import Step11PaperDraft from './Step11PaperDraft';
+import ResearchCopilotDrawer from '../ResearchCopilotDrawer';
 import { researchApi } from '../../../services/researchApi';
 
 const ResearchWorkspaceShell = ({
@@ -31,6 +36,10 @@ const ResearchWorkspaceShell = ({
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+
+  // Command Center States: Focus Mode & AI Copilot Drawer
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
   // New Project Modal State
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -339,25 +348,95 @@ const ResearchWorkspaceShell = ({
 
   return (
     <div className="space-y-4">
-      {/* Main 2-Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-12 items-start">
-        {/* Left Column: 11-Step Stepper */}
-        <div className="lg:col-span-3">
-          <WorkspaceStepper
-            project={project}
-            currentStep={currentStep}
-            onSelectStep={handleSelectStep}
-            onBackToProjects={handleSafeBackToProjects}
-            onNewProject={() => setShowNewProjectModal(true)}
-            isSaving={isSaving}
-          />
+      {/* ── Command Bar: Study Indicator, Focus Mode & Research Copilot ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-2.5">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {project?.title || 'Active Study'}
+          </span>
+          <span className="text-xs text-slate-400">
+            Step {currentStep} of 11 • {isFocusMode ? 'Focus Mode' : 'Standard Workspace'}
+          </span>
         </div>
 
-        {/* Right Column: Active Step Workspace */}
-        <div className="lg:col-span-9 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+        <div className="flex items-center gap-2">
+          {/* Focus Mode Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsFocusMode((prev) => !prev)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+              isFocusMode
+                ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750'
+            }`}
+            title={isFocusMode ? 'Exit distraction-free Focus Mode' : 'Enter Focus Mode (hides stepper sidebar)'}
+          >
+            {isFocusMode ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            <span>{isFocusMode ? 'Exit Focus' : 'Focus Mode'}</span>
+          </button>
+
+          {/* AI Copilot Side Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsCopilotOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors"
+          >
+            <Bot size={13} />
+            <span>Research Copilot</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Layout Grid */}
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* Left Column: 11-Step Stepper (hidden in focus mode) */}
+        {!isFocusMode && (
+          <div className="lg:col-span-3">
+            <WorkspaceStepper
+              project={project}
+              currentStep={currentStep}
+              onSelectStep={handleSelectStep}
+              onBackToProjects={handleSafeBackToProjects}
+              onNewProject={() => setShowNewProjectModal(true)}
+              isSaving={isSaving}
+            />
+          </div>
+        )}
+
+        {/* Right Column: Active Step Workspace (full-width in focus mode) */}
+        <div
+          className={`${
+            isFocusMode ? 'lg:col-span-12' : 'lg:col-span-9'
+          } rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-6 shadow-xs transition-colors`}
+        >
           {renderActiveStep()}
         </div>
       </div>
+
+      {/* AI Research Copilot Drawer */}
+      <ResearchCopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        project={project}
+        onApplyAction={(action) => {
+          if (!action) return;
+          const text = (action.text || '').toLowerCase();
+          if (text.includes('vla') || text.includes('paper') || text.includes('literature')) {
+            setCurrentStep(1);
+          } else if (text.includes('gap')) {
+            setCurrentStep(5);
+          } else if (text.includes('benchmark') || text.includes('h2') || text.includes('calvin')) {
+            setCurrentStep(8);
+          } else if (text.includes('equation') || text.includes('manuscript') || text.includes('draft')) {
+            setCurrentStep(11);
+          } else if (text.includes('methodology') || text.includes('method')) {
+            setCurrentStep(7);
+          }
+          setIsCopilotOpen(false);
+        }}
+      />
 
       {/* Start New Research Project Modal (Complies with Sections 11, 12, 13) */}
       {showNewProjectModal && (

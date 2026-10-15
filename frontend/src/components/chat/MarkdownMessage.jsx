@@ -67,7 +67,7 @@ const formatInline = (text) => {
       return (
         <code
           key={pIdx}
-          className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-indigo-700 border border-slate-200/80"
+          className="rounded-md bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-indigo-700 dark:text-indigo-300 border border-slate-200/80 dark:border-slate-700"
         >
           {part.slice(1, -1)}
         </code>
@@ -81,14 +81,14 @@ const formatInline = (text) => {
         {boldParts.map((subPart, bIdx) => {
           if (subPart.startsWith('**') && subPart.endsWith('**') && subPart.length >= 4) {
             return (
-              <strong key={bIdx} className="font-bold text-slate-900">
+              <strong key={bIdx} className="font-bold text-slate-900 dark:text-white">
                 {subPart.slice(2, -2)}
               </strong>
             );
           }
           if (subPart.startsWith('*') && subPart.endsWith('*') && subPart.length >= 2) {
             return (
-              <em key={bIdx} className="italic text-slate-800">
+              <em key={bIdx} className="italic text-slate-800 dark:text-slate-200">
                 {subPart.slice(1, -1)}
               </em>
             );
@@ -112,22 +112,22 @@ const TableBlock = ({ rows }) => {
   );
 
   return (
-    <div className="my-3 overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
-      <table className="w-full text-left text-xs text-slate-700 border-collapse">
-        <thead className="bg-slate-100/80 text-slate-900 font-semibold border-b border-slate-200">
+    <div className="my-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse">
+        <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-900 dark:text-white font-semibold border-b border-slate-200 dark:border-slate-800">
           <tr>
             {headerCells.map((cell, idx) => (
-              <th key={idx} className="px-3 py-2 border-r last:border-r-0 border-slate-200 font-bold">
+              <th key={idx} className="px-3 py-2 border-r last:border-r-0 border-slate-200 dark:border-slate-800 font-bold">
                 {formatInline(cell)}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 bg-white">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900/60">
           {dataRows.map((row, rIdx) => (
-            <tr key={rIdx} className="hover:bg-slate-50/60 transition">
+            <tr key={rIdx} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
               {row.map((cell, cIdx) => (
-                <td key={cIdx} className="px-3 py-2 border-r last:border-r-0 border-slate-100">
+                <td key={cIdx} className="px-3 py-2 border-r last:border-r-0 border-slate-100 dark:border-slate-800">
                   {formatInline(cell)}
                 </td>
               ))}
@@ -313,7 +313,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
   }, [content]);
 
   return (
-    <div className="space-y-2 text-sm leading-relaxed text-slate-800 break-words">
+    <div className="space-y-2 text-sm leading-relaxed text-slate-800 dark:text-slate-200 break-words">
       {blocks.map((block, idx) => {
         const isLastBlock = idx === blocks.length - 1;
 
@@ -334,7 +334,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
 
         if (block.type === 'ordered-list') {
           return (
-            <ol key={idx} className="my-2 ml-5 list-decimal space-y-1 text-slate-800">
+            <ol key={idx} className="my-2 ml-5 list-decimal space-y-1 text-slate-800 dark:text-slate-200">
               {block.items.map((item, itemIdx) => (
                 <li key={itemIdx} className="pl-1">
                   {formatInline(item)}
@@ -349,7 +349,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
 
         if (block.type === 'unordered-list') {
           return (
-            <ul key={idx} className="my-2 ml-5 list-disc space-y-1 text-slate-800">
+            <ul key={idx} className="my-2 ml-5 list-disc space-y-1 text-slate-800 dark:text-slate-200">
               {block.items.map((item, itemIdx) => (
                 <li key={itemIdx} className="pl-1">
                   {formatInline(item)}
@@ -364,7 +364,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
 
         if (block.type === 'h1') {
           return (
-            <h1 key={idx} className="text-base font-bold text-slate-900 mt-3 mb-1">
+            <h1 key={idx} className="text-base font-bold text-slate-900 dark:text-white mt-3 mb-1">
               {formatInline(block.text)}
             </h1>
           );
@@ -372,7 +372,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
 
         if (block.type === 'h2') {
           return (
-            <h2 key={idx} className="text-sm font-bold text-slate-900 mt-2.5 mb-1">
+            <h2 key={idx} className="text-sm font-bold text-slate-900 dark:text-white mt-2.5 mb-1">
               {formatInline(block.text)}
             </h2>
           );
@@ -380,7 +380,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
 
         if (block.type === 'h3') {
           return (
-            <h3 key={idx} className="text-xs font-bold uppercase tracking-wider text-slate-700 mt-2 mb-0.5">
+            <h3 key={idx} className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mt-2 mb-0.5">
               {formatInline(block.text)}
             </h3>
           );
@@ -391,7 +391,7 @@ const MarkdownMessage = ({ content = '', isStreaming = false }) => {
         }
 
         return (
-          <p key={idx} className="text-sm leading-relaxed text-slate-800">
+          <p key={idx} className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">
             {formatInline(block.text)}
             {isStreaming && isLastBlock && (
               <span className="inline-block w-1.5 h-3.5 ml-1 align-middle bg-indigo-600 animate-pulse rounded-xs" />

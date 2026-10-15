@@ -11,21 +11,21 @@ const AIMonitoring = () => {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm font-semibold uppercase text-indigo-600">AI Monitoring</p>
-        <h1 className="mt-3 text-3xl font-bold text-slate-900">Model performance</h1>
-        <p className="mt-2 text-sm text-slate-500">Monitor inference health, latency, and production usage for your AI workflows.</p>
+        <p className="text-sm font-semibold uppercase text-indigo-600 dark:text-indigo-400">AI Monitoring</p>
+        <h1 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Model performance</h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Monitor inference health, latency, and production usage for your AI workflows.</p>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {monitors.map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.title} className="rounded-3xl bg-white p-6 shadow-sm">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <div key={item.title} className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
                 <Icon size={20} />
               </div>
-              <p className="mt-5 text-sm text-slate-500">{item.title}</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900">{item.value}</p>
+              <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">{item.title}</p>
+              <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{item.value}</p>
             </div>
           );
         })}

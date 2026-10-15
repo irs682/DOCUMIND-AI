@@ -49,17 +49,17 @@ const Login = () => {
         )}
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Work email</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Email or Username</span>
           <span className="relative block">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
-              type="email"
+              type="text"
               name="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="you@company.com"
+              placeholder="user@documind.ai or user"
               required
-              autoComplete="email"
+              autoComplete="username"
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3.5 pl-11 pr-4 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-950"
             />
           </span>
@@ -94,6 +94,34 @@ const Login = () => {
             </button>
           </span>
         </label>
+
+        {/* Quick Fill Demo Credentials */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+            Quick Fill Demo Accounts
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setForm({ email: 'user@documind.ai', password: 'password123' })}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            >
+              <span>👤</span>
+              <span>Demo User</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm({ email: 'admin@documind.ai', password: 'password123' })}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            >
+              <span>⚡</span>
+              <span>Admin</span>
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500 text-center">
+            Default password: <code className="font-mono text-indigo-600 dark:text-indigo-400">password123</code>
+          </p>
+        </div>
 
         <button
           type="submit"

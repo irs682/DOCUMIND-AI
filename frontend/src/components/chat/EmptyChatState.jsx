@@ -67,14 +67,14 @@ const EmptyChatState = ({
   return (
     <div className="flex flex-col items-center justify-center min-h-[480px] h-full text-center max-w-2xl mx-auto px-4 py-8 select-none animate-in fade-in duration-200">
       {/* Brand Icon */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-200/50 mb-4">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-200/50 dark:shadow-indigo-950/50 mb-4">
         <Sparkles size={28} />
       </div>
 
-      <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+      <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
         DOCUMIND AI
       </h2>
-      <p className="mt-1.5 text-xs text-slate-500 max-w-md leading-relaxed">
+      <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 max-w-md leading-relaxed">
         {sessionDocCount > 0
           ? `Grounded across ${sessionDocCount} attached session document(s). Ask questions or select an action below.`
           : 'Grounded document assistant. Query single or multi-document corpuses with vector search and memory.'}
@@ -89,19 +89,19 @@ const EmptyChatState = ({
               key={idx}
               type="button"
               onClick={() => onSelectPrompt(item.prompt)}
-              className="group flex flex-col justify-between p-3.5 rounded-2xl border border-slate-200/90 bg-white hover:border-indigo-300 hover:bg-indigo-50/40 hover:shadow-xs transition cursor-pointer text-left"
+              className="group flex flex-col justify-between p-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:bg-indigo-50/40 dark:hover:bg-slate-800/80 hover:shadow-xs transition cursor-pointer text-left"
             >
               <div className="space-y-1">
-                <div className="flex items-center gap-2 font-bold text-xs text-slate-800 group-hover:text-indigo-700 transition">
-                  <Icon size={14} className="text-indigo-500 shrink-0" />
+                <div className="flex items-center gap-2 font-bold text-xs text-slate-800 dark:text-slate-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition">
+                  <Icon size={14} className="text-indigo-500 dark:text-indigo-400 shrink-0" />
                   <span>{item.title}</span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-snug line-clamp-2">
                   {item.description}
                 </p>
               </div>
 
-              <div className="mt-2.5 flex items-center justify-end text-[10px] font-semibold text-slate-300 group-hover:text-indigo-600 transition">
+              <div className="mt-2.5 flex items-center justify-end text-[10px] font-semibold text-slate-300 dark:text-slate-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
                 <span className="opacity-0 group-hover:opacity-100 transition mr-1">Ask this</span>
                 <ArrowRight size={12} />
               </div>

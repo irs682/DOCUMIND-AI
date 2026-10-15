@@ -19,6 +19,32 @@ const {
   runAcademicReviewerAudit,
   generateBibtexBundle,
 } = require('../services/academicAuditService');
+const {
+  classifyResearchIntent,
+  assembleCopilotContext,
+  answerCopilotQuery,
+  generateManuscriptRewrites,
+  computeWordDiff,
+  INTENT_TYPES,
+} = require('../services/researchCopilotService');
+const {
+  subscribeToProjectGeneration,
+  startAutonomousManuscriptGeneration,
+  getProjectGenerationState,
+} = require('../services/autonomousManuscriptService');
+
+const getOwnerFilter = (user) => {
+  if (!user) return {};
+  const conditions = [];
+  if (user._id) {
+    conditions.push({ owner: user._id });
+    conditions.push({ owner: user._id.toString() });
+  }
+  if (user.id && (!user._id || user.id !== user._id.toString())) {
+    conditions.push({ owner: user.id });
+  }
+  return conditions.length === 1 ? conditions[0] : { $or: conditions };
+};
 
 /**
  * GET /api/research/projects
@@ -26,7 +52,8 @@ const {
  */
 const getProjects = async (req, res) => {
   try {
-    const projects = await ResearchProject.find({ owner: req.user._id })
+    const filter = getOwnerFilter(req.user);
+    const projects = await ResearchProject.find(filter)
       .populate('documentIds', 'name originalName size status')
       .sort({ updatedAt: -1 });
 
@@ -43,7 +70,8 @@ const getProjects = async (req, res) => {
 const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-    const project = await ResearchProject.findOne({ _id: id, owner: req.user._id })
+    const filter = getOwnerFilter(req.user);
+    const project = await ResearchProject.findOne({ _id: id, ...filter })
       .populate('documentIds', 'name originalName size status');
 
     if (!project) {
@@ -127,20 +155,31 @@ const updateProject = async (req, res) => {
       updates.userResults = updates.userResults.map((r) => {
         const mName = (r.modelName || r.model || 'Proposed Model').trim();
         const numVal = typeof r.value === 'number' ? r.value : parseFloat(r.value);
+        const status = r.verificationStatus || (r.verified && (r.runId || (r.runIds && r.runIds.length > 0)) ? 'VERIFIED_EXPERIMENT' : 'USER_ENTERED');
+        const runIds = Array.isArray(r.runIds) && r.runIds.length > 0
+          ? r.runIds
+          : (r.runId ? [r.runId] : []);
+        const isVerified = status === 'VERIFIED_EXPERIMENT' && runIds.length > 0;
         return {
           id: r.id || `exp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           modelName: mName,
           model: mName,
-          dataset: (r.dataset || 'Benchmark Dataset').trim(),
+          benchmark: (r.benchmark || r.dataset || 'Benchmark Dataset').trim(),
+          dataset: (r.dataset || r.benchmark || 'Benchmark Dataset').trim(),
+          task: (r.task || '').trim(),
           split: (r.split || 'Test').trim(),
           metric: (r.metric || 'Metric').trim(),
           value: Number.isFinite(numVal) ? numVal : 0,
           unit: (r.unit || '%').trim(),
-          runId: (r.runId || '').trim(),
+          runIds,
+          runId: runIds[0] || (r.runId || '').trim(),
+          seeds: Array.isArray(r.seeds) ? r.seeds : [],
+          sourceArtifactId: (r.sourceArtifactId || '').trim(),
           sourceFile: (r.sourceFile || '').trim(),
           notes: (r.notes || '').trim(),
           sourceType: r.sourceType || 'user_supplied_result',
-          verified: r.verified !== undefined ? Boolean(r.verified) : true,
+          verificationStatus: status,
+          verified: isVerified,
         };
       });
     }
@@ -346,6 +385,8 @@ const executeProjectStep = async (req, res) => {
         updates = {
           comparisonMatrix: compResult.comparisonMatrix,
           benchmarkCompatibility: compResult.benchmarkCompatibility,
+          evaluationProfiles: compResult.evaluationProfiles || [],
+          compatibilityChecks: compResult.compatibilityChecks || [],
           currentStep: Math.max(project.currentStep, 5),
         };
         break;
@@ -848,6 +889,536 @@ const exportBibtex = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/research/projects/:id/copilot/chat
+ * Research Copilot Chat with scientific intent classification and grounded context
+ */
+const handleCopilotChat = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { query, selectedText, sectionId, contextSources, history = [] } = req.body;
+    const userId = req.user?._id || req.user?.id;
+
+    const project = await ResearchProject.findOne({ _id: id, owner: userId })
+      .populate('documentIds', 'name originalName size status');
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Research project not found.' });
+    }
+
+    const intent = classifyResearchIntent(query || '');
+    const context = assembleCopilotContext(project, { selectedText, sectionId, contextSources });
+    const answerResult = await answerCopilotQuery(query, context, history);
+
+    return res.json({
+      success: true,
+      intent,
+      reply: answerResult.reply,
+      groundedSources: answerResult.groundedSources || [],
+      suggestedActions: answerResult.suggestedActions || [],
+      contextSummary: {
+        mode: context.manuscriptMode,
+        verifiedExperiments: context.verifiedExperimentCount,
+        literatureCount: context.literatureFacts.length,
+        figuresCount: context.manuscriptObjects.figures.length,
+      },
+    });
+  } catch (err) {
+    console.error('[COPILOT_CHAT_ERROR]', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * POST /api/research/projects/:id/copilot/rewrite
+ * Context-Aware Manuscript Rewrite generating Versions A, B, and C with Diff
+ */
+const handleCopilotRewrite = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      selectedText,
+      surroundingParagraphs,
+      sectionId,
+      customInstruction,
+      contextSources,
+    } = req.body;
+    const userId = req.user?._id || req.user?.id;
+
+    if (!selectedText || !selectedText.trim()) {
+      return res.status(400).json({ success: false, message: 'No manuscript text selected for rewrite.' });
+    }
+
+    const project = await ResearchProject.findOne({ _id: id, owner: userId });
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Research project not found.' });
+    }
+
+    const context = assembleCopilotContext(project, { selectedText, sectionId, contextSources });
+    const rewriteResult = await generateManuscriptRewrites({
+      selectedText,
+      surroundingParagraphs,
+      sectionId,
+      customInstruction,
+      context,
+    });
+
+    return res.json({
+      success: true,
+      originalText: selectedText,
+      sectionId,
+      alternatives: rewriteResult.alternatives,
+      citationAudit: rewriteResult.citationAudit,
+      manuscriptMode: rewriteResult.manuscriptMode,
+    });
+  } catch (err) {
+    console.error('[COPILOT_REWRITE_ERROR]', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * POST /api/research/projects/:id/copilot/apply-rewrite
+ * Accepts an AI revision, updates canonical draft, and creates a revision snapshot
+ */
+const handleApplyRewrite = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      sectionHeading,
+      originalText,
+      revisedText,
+      action = 'replace',
+      rationale,
+    } = req.body;
+    const userId = req.user?._id || req.user?.id;
+
+    const project = await ResearchProject.findOne({ _id: id, owner: userId });
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Research project not found.' });
+    }
+
+    if (!project.generatedDraft || !Array.isArray(project.generatedDraft.sections)) {
+      return res.status(400).json({ success: false, message: 'Manuscript has no generated draft to update.' });
+    }
+
+    // 1. Snapshot previous state into version history before applying
+    if (!project.manuscriptRevisions) {
+      project.manuscriptRevisions = [];
+    }
+    const nextVersion = project.manuscriptRevisions.length + 1;
+    project.manuscriptRevisions.push({
+      versionNumber: nextVersion,
+      changeDescription: rationale || `AI Revision applied to ${sectionHeading || 'section'}`,
+      createdAt: new Date(),
+      draftSnapshot: JSON.parse(JSON.stringify(project.generatedDraft)),
+      objectsSnapshot: JSON.parse(JSON.stringify(project.manuscriptObjects || [])),
+    });
+
+    // 2. Locate target section
+    let targetSection = null;
+    if (sectionHeading) {
+      targetSection = project.generatedDraft.sections.find(
+        (s) => s.heading.toLowerCase().trim() === sectionHeading.toLowerCase().trim() ||
+               s.heading.toLowerCase().includes(sectionHeading.toLowerCase())
+      );
+    }
+    if (!targetSection && project.generatedDraft.sections.length > 0) {
+      // Find section containing originalText
+      if (originalText) {
+        targetSection = project.generatedDraft.sections.find(
+          (s) => s.content && s.content.includes(originalText.trim())
+        );
+      }
+      if (!targetSection) {
+        targetSection = project.generatedDraft.sections[0];
+      }
+    }
+
+    // 3. Apply modification
+    if (targetSection) {
+      if (action === 'replace' && originalText && targetSection.content.includes(originalText.trim())) {
+        targetSection.content = targetSection.content.replace(originalText.trim(), revisedText.trim());
+      } else if (action === 'insertBelow' && originalText && targetSection.content.includes(originalText.trim())) {
+        targetSection.content = targetSection.content.replace(
+          originalText.trim(),
+          `${originalText.trim()}\n\n${revisedText.trim()}`
+        );
+      } else if (action === 'replaceSection') {
+        targetSection.content = revisedText.trim();
+      } else {
+        // Fallback: append or replace
+        targetSection.content = targetSection.content.replace(originalText, revisedText) || `${targetSection.content}\n\n${revisedText}`;
+      }
+    }
+
+    project.updatedAt = new Date();
+    project.markModified('generatedDraft');
+    project.markModified('manuscriptRevisions');
+    await project.save();
+
+    return res.json({
+      success: true,
+      message: `Revision accepted. Version ${nextVersion} saved in history.`,
+      project,
+      versionNumber: nextVersion,
+    });
+  } catch (err) {
+    console.error('[APPLY_REWRITE_ERROR]', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * GET /api/research/projects/:id/copilot/live-status
+ * Refresh recovery status query
+ */
+const handleLiveStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const state = getProjectGenerationState(id);
+    return res.json({ success: true, ...state });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * POST /api/research/projects/:id/copilot/generate-live
+ * Trigger autonomous section-by-section manuscript generation
+ */
+const handleStartAutonomousGeneration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { mode } = req.body;
+    const userId = req.user?._id || req.user?.id;
+
+    const project = await ResearchProject.findOne({ _id: id, owner: userId })
+      .populate('documentIds', 'name originalName size status');
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Research project not found.' });
+    }
+
+    // Launch generation (asynchronous with live SSE events emitted)
+    startAutonomousManuscriptGeneration(project, { mode, emitProgress: true }).catch((genErr) => {
+      console.error('[AUTONOMOUS_GEN_BACKGROUND_ERROR]', genErr);
+    });
+
+    return res.json({
+      success: true,
+      message: 'Autonomous live paper generation started.',
+      projectId: id,
+    });
+  } catch (err) {
+    console.error('[START_LIVE_GEN_ERROR]', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * GET /api/research/projects/:id/copilot/events
+ * SSE stream for real-time section generation, claims, and audit events
+ */
+const handleStreamEvents = (req, res) => {
+  const { id } = req.params;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (res.flushHeaders) res.flushHeaders();
+
+  // Initial event
+  res.write(`event: connected\ndata: ${JSON.stringify({ projectId: id, timestamp: Date.now() })}\n\n`);
+
+  const unsubscribe = subscribeToProjectGeneration(id, ({ eventType, data }) => {
+    res.write(`event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`);
+  });
+
+  req.on('close', () => {
+    unsubscribe();
+    res.end();
+  });
+};
+
+/**
+ * POST /api/research/projects/:id/evaluation-plans
+ * Create or update standardized ComparableEvaluationPlan (Standardize Evaluation)
+ */
+const saveEvaluationPlan = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const filter = getOwnerFilter(req.user);
+    const project = await ResearchProject.findOne({ _id: id, ...filter });
+    if (!project) return res.status(404).json({ message: 'Project not found.' });
+
+    const {
+      benchmark,
+      task,
+      dataset = '',
+      split = '',
+      metric,
+      metricDefinition = '',
+      unit = '%',
+      evaluationEpisodes = 500,
+      runs = 5,
+      seeds = [42, 123, 456, 789, 2026],
+      baselineModelIds = [],
+      baselineModelNames = [],
+      evaluationProtocol = '',
+      hardwareConstraints = '',
+      notes = '',
+      status = 'APPROVED',
+    } = req.body;
+
+    if (!benchmark || !task || !metric) {
+      return res.status(400).json({ message: 'Benchmark, task, and metric are required to standardize evaluation.' });
+    }
+
+    const plan = {
+      id: `plan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      projectId: id,
+      benchmark: benchmark.trim(),
+      task: task.trim(),
+      dataset: dataset.trim(),
+      split: split.trim(),
+      metric: metric.trim(),
+      metricDefinition: metricDefinition.trim(),
+      unit: unit.trim() || '%',
+      evaluationEpisodes: Number(evaluationEpisodes) || 500,
+      runs: Number(runs) || 5,
+      seeds: Array.isArray(seeds) ? seeds : [42, 123, 456, 789, 2026],
+      baselineModelIds: Array.isArray(baselineModelIds) ? baselineModelIds : [],
+      baselineModelNames: Array.isArray(baselineModelNames) ? baselineModelNames : [],
+      evaluationProtocol: evaluationProtocol.trim(),
+      hardwareConstraints: hardwareConstraints.trim(),
+      notes: notes.trim(),
+      status,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    project.comparableEvaluationPlans = project.comparableEvaluationPlans || [];
+    project.comparableEvaluationPlans.unshift(plan);
+    project.comparisonStrategy = 'STANDARDIZED_PLAN';
+    if (project.benchmarkCompatibility) {
+      project.benchmarkCompatibility.comparisonStrategy = 'STANDARDIZED_PLAN';
+    }
+    project.currentStep = Math.max(project.currentStep || 1, 5);
+
+    await project.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Comparable evaluation plan registered successfully.',
+      plan,
+      project,
+    });
+  } catch (err) {
+    console.error('[SAVE_EVALUATION_PLAN_ERROR]', err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * GET /api/research/projects/:id/evaluation-plans
+ * List comparable evaluation plans
+ */
+const getEvaluationPlans = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const filter = getOwnerFilter(req.user);
+    const project = await ResearchProject.findOne({ _id: id, ...filter }).select('comparableEvaluationPlans comparisonStrategy');
+    if (!project) return res.status(404).json({ message: 'Project not found.' });
+
+    return res.json({
+      success: true,
+      plans: project.comparableEvaluationPlans || [],
+      comparisonStrategy: project.comparisonStrategy || 'PENDING',
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * POST /api/research/projects/:id/benchmark-results
+ * Attach a new or existing benchmark result to an evaluation plan
+ */
+const addBenchmarkResult = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const filter = getOwnerFilter(req.user);
+    const project = await ResearchProject.findOne({ _id: id, ...filter });
+    if (!project) return res.status(404).json({ message: 'Project not found.' });
+
+    const {
+      evaluationPlanId = '',
+      modelId = '',
+      modelName = 'Proposed Model',
+      benchmark,
+      task,
+      split = '',
+      metric,
+      value,
+      unit = '%',
+      runId = '',
+      seed = 42,
+      sourceFileId = '',
+      sourceFileName = '',
+      verificationStatus = 'USER_ENTERED',
+    } = req.body;
+
+    if (!benchmark || !metric || value === undefined || isNaN(Number(value))) {
+      return res.status(400).json({ message: 'Benchmark, metric, and valid numerical value are required.' });
+    }
+
+    const numValue = Number(value);
+
+    const result = {
+      id: `res_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      evaluationPlanId,
+      modelId: modelId || `mod_${Date.now()}`,
+      modelName: modelName.trim(),
+      benchmark: benchmark.trim(),
+      task: (task || '').trim(),
+      split: split.trim(),
+      metric: metric.trim(),
+      value: numValue,
+      unit: unit.trim() || '%',
+      runId: runId.trim(),
+      seed: Number(seed) || 42,
+      sourceFileId: sourceFileId.trim(),
+      sourceFileName: sourceFileName.trim(),
+      verificationStatus,
+      createdAt: new Date().toISOString(),
+    };
+
+    project.benchmarkResults = project.benchmarkResults || [];
+    project.benchmarkResults.push(result);
+
+    // If verified experiment, also link into userResults for empirical pipeline
+    if (verificationStatus === 'VERIFIED_EXPERIMENT') {
+      project.userResults = project.userResults || [];
+      project.userResults.push({
+        id: result.id,
+        modelName: result.modelName,
+        benchmark: result.benchmark,
+        dataset: result.benchmark,
+        task: result.task,
+        split: result.split,
+        metric: result.metric,
+        value: numValue,
+        unit: result.unit,
+        runId: result.runId,
+        seeds: [result.seed],
+        sourceFile: result.sourceFileName,
+        verificationStatus: 'VERIFIED_EXPERIMENT',
+        verified: true,
+      });
+    }
+
+    await project.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Benchmark result attached successfully.',
+      result,
+      project,
+    });
+  } catch (err) {
+    console.error('[ADD_BENCHMARK_RESULT_ERROR]', err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * POST /api/research/projects/:id/comparison-strategy
+ * Set comparison strategy: QUALITATIVE, STANDARDIZED_PLAN, or DIRECT
+ */
+const setComparisonStrategy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const filter = getOwnerFilter(req.user);
+    const project = await ResearchProject.findOne({ _id: id, ...filter });
+    if (!project) return res.status(404).json({ message: 'Project not found.' });
+
+    const { strategy } = req.body;
+    if (!['QUALITATIVE', 'STANDARDIZED_PLAN', 'DIRECT', 'PENDING'].includes(strategy)) {
+      return res.status(400).json({ message: 'Invalid comparison strategy.' });
+    }
+
+    project.comparisonStrategy = strategy;
+    if (project.benchmarkCompatibility) {
+      project.benchmarkCompatibility.comparisonStrategy = strategy;
+    }
+    // Selecting strategy completes Step 4!
+    project.currentStep = Math.max(project.currentStep || 1, 5);
+
+    await project.save();
+
+    return res.json({
+      success: true,
+      message: `Comparison strategy set to ${strategy}. Step 4 complete.`,
+      strategy,
+      project,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * GET /api/research/projects/:id/benchmark-details/:benchmarkKey
+ * Rich benchmark catalog metadata and associated project papers
+ */
+const getBenchmarkCatalogDetails = async (req, res) => {
+  try {
+    const { id, benchmarkKey } = req.params;
+    const { BENCHMARK_CATALOG, normalizeBenchmark } = require('../services/benchmarkCompatibilityService');
+    const filter = getOwnerFilter(req.user);
+    const project = await ResearchProject.findOne({ _id: id, ...filter });
+
+    const normKey = normalizeBenchmark(benchmarkKey);
+    const catalogEntry = BENCHMARK_CATALOG[normKey] || BENCHMARK_CATALOG[benchmarkKey.toUpperCase()] || {
+      name: benchmarkKey,
+      key: normKey,
+      domain: 'Specialized Domain',
+      description: `Evaluation suite for ${benchmarkKey}.`,
+      tasks: ['Domain evaluation'],
+      datasets: [benchmarkKey],
+      splits: ['Standard split'],
+      defaultMetric: 'Success Rate (%)',
+      unit: '%',
+      defaultProtocol: 'Standard protocol from published literature.',
+      episodes: 100,
+      runs: 3,
+      baselineModels: [],
+    };
+
+    const associatedPapers = (project?.paperProfiles || []).filter((p) => {
+      const bMarks = (p.benchmarks || []).map((b) => String(b).toLowerCase());
+      const dSets = (p.datasets || []).map((d) => String(d).toLowerCase());
+      const needle = benchmarkKey.toLowerCase();
+      return bMarks.some((b) => b.includes(needle)) || dSets.some((d) => d.includes(needle));
+    }).map((p) => ({
+      title: p.title || p.documentName,
+      model: p.modelsAlgorithms?.[0] || 'Proposed Model',
+      metric: p.metrics?.[0] || catalogEntry.defaultMetric,
+      sourceId: p.canonicalSourceId || p.documentId,
+    }));
+
+    return res.json({
+      success: true,
+      benchmark: {
+        ...catalogEntry,
+        associatedPapers,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getProjects,
   getProjectById,
@@ -865,4 +1436,16 @@ module.exports = {
   createManuscriptRevision,
   restoreManuscriptRevision,
   exportBibtex,
+  handleCopilotChat,
+  handleCopilotRewrite,
+  handleApplyRewrite,
+  handleLiveStatus,
+  handleStartAutonomousGeneration,
+  handleStreamEvents,
+  saveEvaluationPlan,
+  getEvaluationPlans,
+  addBenchmarkResult,
+  setComparisonStrategy,
+  getBenchmarkCatalogDetails,
 };
+

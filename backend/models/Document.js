@@ -185,7 +185,7 @@ const documentSchema = new mongoose.Schema(
       index: true,
     },
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'User',
       required: true,
       index: true,
@@ -197,7 +197,7 @@ const documentSchema = new mongoose.Schema(
       index: true,
     },
     user_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'User',
       index: true,
     },

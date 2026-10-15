@@ -32,7 +32,7 @@ const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Hero Section */}
       <section className="bg-linear-to-br from-indigo-600 via-indigo-700 to-slate-900 px-6 py-20 sm:py-32 text-white">
         <div className="mx-auto max-w-5xl text-center">
@@ -53,17 +53,21 @@ const FAQ = () => {
           {faqs.map((item, index) => {
             const isOpen = openIndex === index;
             return (
-              <div key={item.question} className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-md transition">
+              <div key={item.question} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden hover:shadow-md transition">
                 <button
-                  className={`flex w-full items-center justify-between px-6 py-5 text-left font-semibold transition ${isOpen ? 'bg-indigo-50 text-indigo-900' : 'text-slate-900 hover:bg-slate-50'}`}
+                  className={`flex w-full items-center justify-between px-6 py-5 text-left font-semibold transition ${
+                    isOpen
+                      ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300'
+                      : 'text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-850'
+                  }`}
                   onClick={() => setOpenIndex(isOpen ? -1 : index)}
                 >
                   <span>{item.question}</span>
-                  <Plus size={20} className={`transition-transform ${isOpen ? 'rotate-45 text-indigo-600' : 'text-slate-400'}`} />
+                  <Plus size={20} className={`transition-transform ${isOpen ? 'rotate-45 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`} />
                 </button>
                 {isOpen && (
-                  <div className="border-t border-slate-200 px-6 py-5 bg-slate-50">
-                    <p className="text-sm leading-7 text-slate-700">{item.answer}</p>
+                  <div className="border-t border-slate-200 dark:border-slate-800 px-6 py-5 bg-slate-50 dark:bg-slate-900/60">
+                    <p className="text-sm leading-7 text-slate-700 dark:text-slate-300">{item.answer}</p>
                   </div>
                 )}
               </div>

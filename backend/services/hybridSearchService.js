@@ -126,6 +126,7 @@ const { classifyQuery } = require('./queryRouterService');
 const performHybridSearch = async ({
   query,
   documentId,
+  documentIds = [],
   userId,
   organizationId,
   knowledgeBaseId,
@@ -157,6 +158,7 @@ const performHybridSearch = async ({
     const hits = await searchSimilarChunks({
       embedding: queryVector,
       documentId,
+      documentIds,
       userId,
       organizationId,
       knowledgeBaseId,
@@ -201,7 +203,9 @@ const performHybridSearch = async ({
   let bm25Results = [];
   try {
     const filter = { status: { $ne: 'failed' } };
-    if (documentId && documentId !== 'all') {
+    if (documentIds && documentIds.length > 0) {
+      filter._id = { $in: documentIds };
+    } else if (documentId && documentId !== 'all') {
       filter._id = documentId;
     }
     if (organizationId && organizationId !== 'all') {
@@ -378,6 +382,7 @@ const performHybridSearch = async ({
 
 module.exports = {
   performHybridSearch,
+  executeHybridSearch: performHybridSearch,
   reciprocalRankFusion,
   tokenize,
 };

@@ -9,8 +9,10 @@
     "dev:web": "concurrently -n \"backend,frontend\" -c \"cyan,magenta\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
+    "dev:mobile": "npm run start --prefix mobile",
+    "mobile": "npm run start --prefix mobile",
     "dev:ai": ".\\.venv\\Scripts\\python.exe -m uvicorn main:app --port 8000 --app-dir ai-service",
-    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix mobile",
     "build:frontend": "npm run build --prefix frontend"
   },
   "dependencies": {

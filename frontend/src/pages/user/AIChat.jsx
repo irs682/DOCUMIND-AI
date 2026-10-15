@@ -1166,7 +1166,7 @@ const AIChat = () => {
   const isViewingProjectHome = Boolean(activeProjectId && !activeConversationId && !isChatRoute);
 
   return (
-    <div className="relative flex h-full min-h-0 overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/90 bg-[#f8f9fa] shadow-xl shadow-slate-200/40">
+    <div className="relative flex h-full min-h-0 overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-[#f8f9fa] dark:bg-slate-950 shadow-xl shadow-slate-200/40 dark:shadow-slate-950/60">
       {/* Mobile Sidebar Backdrop */}
       {isSidebarOpen && (
         <button
@@ -1209,17 +1209,17 @@ const AIChat = () => {
 
       {/* ── REGION 2: Center Main Workspace ─────────────────────────────── */}
       {isViewingProjectHome ? (
-        <main className="flex min-w-0 flex-1 flex-col relative bg-[#f8f9fa] overflow-hidden">
+        <main className="flex min-w-0 flex-1 flex-col relative bg-[#f8f9fa] dark:bg-slate-950 overflow-hidden">
           {/* Mobile Bar */}
-          <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5 md:hidden">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 md:hidden">
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 cursor-pointer"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer"
             >
               <PanelLeft size={16} />
             </button>
-            <span className="text-xs font-bold text-slate-900 truncate">
+            <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
               {project?.name || 'Project Workspace'}
             </span>
             <div className="w-8" />
@@ -1256,7 +1256,7 @@ const AIChat = () => {
           />
         </main>
       ) : (
-        <main className="flex min-w-0 flex-1 flex-col relative bg-[#f8f9fa] overflow-hidden">
+        <main className="flex min-w-0 flex-1 flex-col relative bg-[#f8f9fa] dark:bg-slate-950 overflow-hidden">
           {/* Header */}
           <ChatHeader
             title={
@@ -1323,7 +1323,7 @@ const AIChat = () => {
                 <button
                   type="button"
                   onClick={handleJumpToLatest}
-                  className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-slate-900 text-white px-3.5 py-1.5 text-xs font-semibold shadow-lg hover:bg-slate-800 transition cursor-pointer"
+                  className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-indigo-600 text-white px-3.5 py-1.5 text-xs font-semibold shadow-lg hover:bg-slate-800 dark:hover:bg-indigo-500 transition cursor-pointer"
                 >
                   <ArrowDown size={13} />
                   <span>Jump to latest</span>
@@ -1433,22 +1433,22 @@ const AIChat = () => {
 
       {/* Upload Modal */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none">
+          <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
                   <FileText size={18} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Upload New File</h3>
-                  <p className="text-xs text-slate-500">Supports PDF, Word, TXT, CSV, JSON</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upload New File</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Supports PDF, Word, TXT, CSV, JSON</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsUploadModalOpen(false)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 transition cursor-pointer"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
               >
                 <X size={17} />
               </button>
@@ -1460,15 +1460,15 @@ const AIChat = () => {
 
       {/* Chat Delete Confirmation Modal */}
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl border border-slate-200 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
                 <Trash2 size={20} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-slate-900">Delete Conversation?</h4>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Delete Conversation?</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   This will remove the chat history. Uploaded documents and persistent memories remain intact.
                 </p>
               </div>
@@ -1477,7 +1477,7 @@ const AIChat = () => {
               <button
                 type="button"
                 onClick={() => setConfirmDeleteId(null)}
-                className="px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 hover:bg-slate-100 cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 Cancel
               </button>

@@ -163,6 +163,7 @@ const storeDocumentChunks = async ({
 const searchSimilarChunks = async ({
   embedding,
   documentId,
+  documentIds = [],
   userId,
   organizationId,
   knowledgeBaseId,
@@ -177,7 +178,19 @@ const searchSimilarChunks = async ({
   try {
     const filterConditions = [];
 
-    if (documentId && documentId !== 'all') {
+    if (documentIds && documentIds.length > 0) {
+      if (documentIds.length === 1) {
+        filterConditions.push({
+          key: "document_id",
+          match: { value: String(documentIds[0]) },
+        });
+      } else {
+        filterConditions.push({
+          key: "document_id",
+          match: { any: documentIds.map(String) },
+        });
+      }
+    } else if (documentId && documentId !== 'all') {
       filterConditions.push({
         key: "document_id",
         match: { value: String(documentId) },
@@ -279,7 +292,11 @@ const searchSimilarChunks = async ({
   try {
     const Document = mongoose.models.Document || require('../models/Document');
     const filter = { status: { $ne: 'failed' } };
-    if (documentId && documentId !== 'all') filter._id = documentId;
+    if (documentIds && documentIds.length > 0) {
+      filter._id = { $in: documentIds };
+    } else if (documentId && documentId !== 'all') {
+      filter._id = documentId;
+    }
     if (userId) filter.owner = userId;
     if (knowledgeBaseId && knowledgeBaseId !== 'all') {
       filter.$or = [{ knowledgeBaseId }, { knowledgeBaseIds: knowledgeBaseId }];

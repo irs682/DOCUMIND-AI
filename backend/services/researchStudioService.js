@@ -16,6 +16,7 @@
 const Document = require('../models/Document');
 const KnowledgeBase = require('../models/KnowledgeBase');
 const { callOpenRouter, getMainModel, getFastModel } = require('./llmService');
+const { evaluateProjectCompatibility } = require('./benchmarkCompatibilityService');
 
 // ── Helpers ──
 
@@ -79,88 +80,284 @@ const resolveResearchSources = async ({
   return documents;
 };
 
-// ── 2. Paper Structure Extraction (ResearchPaperProfile) ──
+// ── 1b. Canonical Source Deduplication ──
 
-const extractPaperProfile = async (doc) => {
-  const docId = String(doc._id);
-  const docName = doc.name || doc.originalName || 'Untitled Document';
-  const summary = doc.summary || '';
-  const chunks = doc.chunks || [];
-  const evidenceObjects = doc.evidenceObjects || [];
-  const tables = doc.tables || [];
-  const figures = doc.figures || [];
+const canonicalizeDocuments = (documents = []) => {
+  if (!documents || documents.length === 0) return [];
 
-  // Group chunks into a rich preview
-  const sampleText = chunks
-    .slice(0, 15)
-    .map((c) => `[p.${c.pageNumber || 1} ${c.section || ''}] ${c.text || ''}`)
-    .join('\n\n')
-    .slice(0, 7000);
+  const canonicalMap = new Map();
 
-  // Collect multimodal descriptions
+  for (const doc of documents) {
+    const docId = String(doc._id || doc.id);
+    const rawName = doc.name || doc.originalName || doc.title || 'Untitled';
+    const chunks = Array.isArray(doc.chunks) ? doc.chunks : [];
+    const tables = Array.isArray(doc.tables) ? doc.tables : [];
+    const figures = Array.isArray(doc.figures) ? doc.figures : [];
+    const evidenceObjects = Array.isArray(doc.evidenceObjects) ? doc.evidenceObjects : [];
+
+    let inferredTitle = doc.title || '';
+    let firstAuthor = '';
+    let year = '';
+
+    if (chunks.length > 0 && chunks[0].text) {
+      const c0 = chunks[0].text.trim();
+      const firstLine = c0.split('\n')[0].trim();
+      if (firstLine.length > 8 && !firstLine.toLowerCase().startsWith('arxiv') && !firstLine.toLowerCase().startsWith('http')) {
+        inferredTitle = firstLine.replace(/[\*\#\_]/g, '').trim();
+      }
+      const yearMatch = c0.match(/\b(20[12]\d)\b/) || rawName.match(/\b(20[12]\d)\b/) || rawName.match(/AAAI(\d{2})/i);
+      if (yearMatch) {
+        year = yearMatch[1].length === 2 ? `20${yearMatch[1]}` : yearMatch[1];
+      }
+      const authorMatch = c0.match(/([A-Z][a-z]+ [A-Z][a-z]+)/);
+      if (authorMatch) {
+        firstAuthor = authorMatch[1];
+      }
+    }
+
+    if (!inferredTitle) {
+      inferredTitle = rawName.replace(/\.[^/.]+$/, '').replace(/[\(\[\d\)\]\-_]+/g, ' ').trim();
+    }
+
+    // Clean title slug for deduplication
+    const cleanSlug = inferredTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 6)
+      .join('-');
+
+    const canonicalKey = cleanSlug || `doc-${docId}`;
+
+    if (!canonicalMap.has(canonicalKey)) {
+      canonicalMap.set(canonicalKey, {
+        canonicalSourceId: `source-${canonicalKey}`,
+        canonicalTitle: inferredTitle.length > 140 ? inferredTitle.slice(0, 140) + '...' : inferredTitle,
+        firstAuthor: firstAuthor || 'Not reported',
+        year: year || 'Not reported',
+        documentIds: [docId],
+        documentNames: [rawName],
+        primaryDocument: doc,
+        allChunks: [...chunks],
+        allTables: [...tables],
+        allFigures: [...figures],
+        allEvidenceObjects: [...evidenceObjects],
+        isDuplicate: false,
+      });
+    } else {
+      const existing = canonicalMap.get(canonicalKey);
+      existing.isDuplicate = true;
+      existing.documentIds.push(docId);
+      existing.documentNames.push(rawName);
+      const seenChunkTexts = new Set(existing.allChunks.map((c) => (c.text || '').slice(0, 60)));
+      for (const ch of chunks) {
+        const textKey = (ch.text || '').slice(0, 60);
+        if (textKey && !seenChunkTexts.has(textKey)) {
+          seenChunkTexts.add(textKey);
+          existing.allChunks.push(ch);
+        }
+      }
+    }
+  }
+
+  return Array.from(canonicalMap.values());
+};
+
+// ── 2. Paper Structure Extraction (Strict VerifiedField ResearchPaperProfile) ──
+
+const extractPaperProfile = async (docOrCanonical) => {
+  const isCanonical = Boolean(docOrCanonical.canonicalSourceId);
+  const docId = isCanonical ? docOrCanonical.documentIds[0] : String(docOrCanonical._id || docOrCanonical.id);
+  const canonicalSourceId = isCanonical
+    ? docOrCanonical.canonicalSourceId
+    : `source-${(docOrCanonical.name || docOrCanonical.title || docId).toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 40)}`;
+  const docName = isCanonical ? docOrCanonical.canonicalTitle : (docOrCanonical.name || docOrCanonical.originalName || 'Untitled Document');
+  const documentNames = isCanonical ? docOrCanonical.documentNames : [docName];
+  const documentIds = isCanonical ? docOrCanonical.documentIds : [docId];
+  const summary = docOrCanonical.summary || docOrCanonical.primaryDocument?.summary || '';
+  const chunks = isCanonical ? docOrCanonical.allChunks : (docOrCanonical.chunks || []);
+  const evidenceObjects = isCanonical ? docOrCanonical.allEvidenceObjects : (docOrCanonical.evidenceObjects || []);
+  const tables = isCanonical ? docOrCanonical.allTables : (docOrCanonical.tables || []);
+  const figures = isCanonical ? docOrCanonical.allFigures : (docOrCanonical.figures || []);
+
+  // Full searchable text for deterministic entity post-validation
+  const fullSearchableCorpusText = chunks
+    .map((c) => c.text || '')
+    .concat(tables.map((t) => `${t.caption || ''} ${t.summary || ''}`))
+    .concat(figures.map((f) => `${f.caption || ''} ${f.title || ''}`))
+    .join(' ')
+    .toLowerCase();
+
+  // Multi-Query Targeted Retrieval Configurations
+  const RETRIEVAL_CATEGORIES = {
+    methodology: {
+      name: 'methodology',
+      keywords: ['method', 'methodology', 'architecture', 'framework', 'algorithm', 'formulation', 'pipeline', 'workflow'],
+      sections: ['method', 'methodology', 'approach', 'model', 'architecture', 'preliminaries', '4'],
+    },
+    memoryMechanism: {
+      name: 'memoryMechanism',
+      keywords: ['memory', 'experience pool', 'experience gathering', 'experience format', 'buffer', 'trajectory', 'insights extraction', 'natural language'],
+      sections: ['memory', 'experience', 'gathering', '4.1', '4.2'],
+    },
+    retrievalMechanism: {
+      name: 'retrievalMechanism',
+      keywords: ['retrieval', 'retrieve', 'task inference', 'similarity search', 'fewshot', 'in-context', 'nearest', 'query'],
+      sections: ['retrieval', 'task inference', 'inference', '4.3'],
+    },
+    uncertaintyMethod: {
+      name: 'uncertaintyMethod',
+      keywords: ['uncertainty', 'calibration', 'confidence', 'abstention', 'selective prediction', 'risk-aware', 'entropy', 'conformal prediction'],
+      sections: ['uncertainty', 'calibration', 'confidence'],
+    },
+    abstentionMethod: {
+      name: 'abstentionMethod',
+      keywords: ['abstention', 'abstain', 'refusal', 'selective classification', 'deferral'],
+      sections: ['abstention', 'refusal'],
+    },
+    explainabilityMethod: {
+      name: 'explainabilityMethod',
+      keywords: ['explainability', 'interpretability', 'attribution', 'rationale', 'saliency', 'explanation'],
+      sections: ['explainability', 'interpretability'],
+    },
+    datasets_benchmarks: {
+      name: 'datasets_benchmarks',
+      keywords: ['dataset', 'benchmark', 'environment', 'domain', 'evaluat', 'tasks', 'alfworld', 'webshop', 'hotpotqa', 'crafter', 'experiment'],
+      sections: ['experiment', 'evaluation', 'setup', '5.1', '5.2', '5'],
+    },
+    metrics: {
+      name: 'metrics',
+      keywords: ['metric', 'success rate', 'sr %', 'accuracy', 'score', 'path length', 'f1', 'reward', 'performance measurement'],
+      sections: ['experiment', 'evaluation', 'results', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', 'table'],
+    },
+    baselines: {
+      name: 'baselines',
+      keywords: ['baseline', 'react', 'reflexion', 'prior work', 'comparison', 'sota', 'standard llm', 'prompting'],
+      sections: ['baseline', 'experiment', 'setup', 'related work', '5.1', '5.2', '2'],
+    },
+    reportedResults: {
+      name: 'reportedResults',
+      keywords: ['result', 'findings', 'main results', 'average task success', 'ablation', 'outperform', 'table', 'sr %'],
+      sections: ['results', '5.2', '5.3', '5.4', '5.5', '5.6', 'table'],
+    },
+    limitations: {
+      name: 'limitations',
+      keywords: ['limitation', 'bottleneck', 'failure mode', 'future work', 'constraint', 'drawback'],
+      sections: ['limitation', 'conclusion', 'future work', '6'],
+    },
+  };
+
+  const scoreChunk = (chunk, conf) => {
+    let score = 0;
+    const txt = (chunk.text || '').toLowerCase();
+    const sec = (chunk.section || '').toLowerCase();
+    for (const s of conf.sections) {
+      if (sec.includes(s.toLowerCase())) score += 5;
+    }
+    for (const kw of conf.keywords) {
+      if (txt.includes(kw.toLowerCase())) score += 2;
+    }
+    return score;
+  };
+
+  // Retrieve evidence per category
+  const categoryEvidenceMap = {};
+  for (const [catKey, conf] of Object.entries(RETRIEVAL_CATEGORIES)) {
+    const hits = chunks
+      .map((c, idx) => ({
+        chunkId: `chunk-${c.index ?? idx}`,
+        pageNumber: c.pageNumber || 1,
+        section: c.section || 'General',
+        text: (c.text || '').trim(),
+        score: scoreChunk(c, conf),
+      }))
+      .filter((h) => h.score > 0 && h.text.length > 30)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+
+    categoryEvidenceMap[catKey] = hits;
+  }
+
+  // Multimodal tables & figures descriptions
   const tableDescriptions = tables.slice(0, 6).map((t, i) => {
-    return `Table ${t.tableIndex || i + 1}: ${t.caption || t.summary || 'Data Table'} (Rows: ${t.rows || 'N/A'})`;
+    return `[Table-${t.tableIndex || i + 1}, p.${t.pageNumber || 1}] ${t.caption || t.summary || 'Data Table'}`;
   });
-  evidenceObjects
-    .filter((e) => e.objectType === 'table')
-    .forEach((t) => {
-      if (t.caption && !tableDescriptions.includes(t.caption)) {
-        tableDescriptions.push(`Table [p.${t.pageNumber}]: ${t.caption}`);
-      }
-    });
-
   const figureDescriptions = figures.slice(0, 6).map((f, i) => {
-    return `Figure ${f.figureIndex || i + 1}: ${f.caption || f.title || 'Chart/Diagram'} [p.${f.pageNumber || 1}]`;
+    return `[Figure-${f.figureIndex || i + 1}, p.${f.pageNumber || 1}] ${f.caption || f.title || 'Chart/Diagram'}`;
   });
-  evidenceObjects
-    .filter((e) => e.objectType === 'figure' || e.objectType === 'chart')
-    .forEach((f) => {
-      if (f.caption && !figureDescriptions.includes(f.caption)) {
-        figureDescriptions.push(`Figure [p.${f.pageNumber}]: ${f.caption}`);
-      }
-    });
 
-  const equationDescriptions = evidenceObjects
-    .filter((e) => e.objectType === 'equation')
-    .map((eq) => `Equation [p.${eq.pageNumber}]: ${eq.content?.slice(0, 80) || ''}`);
+  // Build targeted category text prompts
+  const buildCategorySectionText = (hits = []) => {
+    if (hits.length === 0) return 'NO DIRECT EVIDENCE FOUND IN SOURCE.';
+    return hits
+      .map((h) => `[ID: ${h.chunkId}, Page: ${h.pageNumber}, Section: ${h.section}]\n${h.text.slice(0, 1200)}`)
+      .join('\n\n');
+  };
 
-  // LLM Structured Extraction Prompt for Paper Profile
-  const prompt = `You are an expert scientific researcher. Analyze the following document text and multimodal evidence to extract a precise, fact-grounded ResearchPaperProfile.
-Do NOT invent fields that are not supported by the text. If a field is unknown or absent, write "Not reported in selected text".
+  const prompt = `You are operating in STRICT EVIDENCE-GROUNDED RESEARCH MODE for DOCUMIND-AI.
+Extract a verifiable, source-grounded ResearchPaperProfile adhering strictly to the GLOBAL SOURCE-BOUNDARY RULE:
+1. Every claim MUST be supported by the provided text chunks or tables.
+2. If a field or mechanism has NO explicit evidence in the text, return status: "NOT_FOUND" and value: "NOT_REPORTED".
+3. NEVER use generic LLM background knowledge or pre-trained assumptions to guess missing details.
+4. Specifically: NEVER guess benchmarks (e.g. do NOT output MiniGrid unless explicitly mentioned).
+5. NEVER guess experience tuple formats (e.g. do NOT output raw (s,a,r,s') tuples unless explicitly written).
+6. NEVER guess evaluation metrics (e.g. do NOT output path length unless explicitly in the text).
+7. If uncertainty or abstention is absent, mark it NOT_FOUND. Do NOT claim the paper implicitly handles it.
 
-Document Name: "${docName}"
-Tables Available: ${tableDescriptions.join('; ') || 'None identified'}
-Figures Available: ${figureDescriptions.join('; ') || 'None identified'}
-Equations Available: ${equationDescriptions.join('; ') || 'None identified'}
+Document: "${docName}"
+Tables: ${tableDescriptions.join('; ') || 'None'}
+Figures: ${figureDescriptions.join('; ') || 'None'}
 
-Document Content:
-${sampleText}
+--- TARGETED RETRIEVED SOURCE EVIDENCE ---
 
-Respond ONLY with valid JSON adhering strictly to this schema:
+[METHODOLOGY EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.methodology)}
+
+[MEMORY MECHANISM EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.memoryMechanism)}
+
+[RETRIEVAL MECHANISM EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.retrievalMechanism)}
+
+[UNCERTAINTY & ABSTENTION EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.uncertaintyMethod)}
+
+[DATASETS & BENCHMARKS EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.datasets_benchmarks)}
+
+[METRICS & EVALUATION EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.metrics)}
+
+[BASELINES EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.baselines)}
+
+[RESULTS EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.reportedResults)}
+
+[LIMITATIONS EVIDENCE]
+${buildCategorySectionText(categoryEvidenceMap.limitations)}
+
+Respond ONLY with valid JSON matching this schema:
 {
-  "title": "Exact or inferred paper title",
-  "authors": ["Author 1", "Author 2"],
-  "year": "Publication year or 'Not reported'",
-  "abstract": "Concise 2-3 sentence abstract or summary",
-  "task": "Target academic task or domain",
-  "problemStatement": "Core problem addressed by this paper",
-  "objectives": ["Primary objective 1", "Objective 2"],
-  "researchQuestions": ["Research question or inquiry"],
-  "methodology": "Methodological approach, algorithm, or framework",
-  "modelsAlgorithms": ["Models/algorithms used"],
-  "trainingStrategy": "Training strategy, loss formulation, or fine-tuning setup",
-  "datasets": ["Datasets or benchmarks used"],
-  "baselines": ["Prior baselines or SOTA methods compared against"],
-  "sampleSize": "Sample size, parameters, or test set magnitude",
-  "experimentalSetup": "Hardware, software, baseline setup, or operating conditions",
-  "computeResources": "Hardware, GPU, compute budget, or parameters scale",
-  "boundaryConditions": "Assumptions, operational limits, or boundary conditions",
-  "metrics": ["Key evaluation metrics"],
-  "results": ["Key factual finding or quantitative result with evidence"],
-  "bestResult": "Peak quantitative performance claim or benchmark score",
-  "limitations": ["Acknowledged limitation or constraint"],
-  "conclusions": ["Primary conclusion"],
-  "futureWork": ["Proposed future research direction mentioned in text"]
+  "title": { "value": "Exact paper title", "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [1] },
+  "authors": { "value": ["Author 1"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [1] },
+  "year": { "value": "Year or NOT_REPORTED", "status": "VERIFIED", "evidenceIds": [], "pageNumbers": [1] },
+  "abstract": { "value": "Abstract summary", "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [1] },
+  "problem": { "value": "Core problem addressed", "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [1] },
+  "methodology": { "value": "Methodology", "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [3] },
+  "memoryMechanism": { "value": "How experiences are gathered/stored", "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [3] },
+  "retrievalMechanism": { "value": "How experiences are retrieved at inference", "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [5] },
+  "uncertaintyMethod": { "value": "NOT_REPORTED", "status": "NOT_FOUND", "evidenceIds": [], "pageNumbers": [] },
+  "abstentionMethod": { "value": "NOT_REPORTED", "status": "NOT_FOUND", "evidenceIds": [], "pageNumbers": [] },
+  "explainabilityMethod": { "value": "NOT_REPORTED", "status": "NOT_FOUND", "evidenceIds": [], "pageNumbers": [] },
+  "datasets": { "value": ["Dataset 1"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [6] },
+  "benchmarks": { "value": ["Benchmark 1"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [6] },
+  "metrics": { "value": ["Metric 1"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [7] },
+  "baselines": { "value": ["Baseline 1"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [6] },
+  "reportedResults": { "value": ["Key verified finding"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [7] },
+  "limitations": { "value": ["Stated limitation"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [9] },
+  "futureWork": { "value": ["Stated future work"], "status": "VERIFIED", "evidenceIds": ["chunk-X"], "pageNumbers": [9] }
 }`;
 
   let parsed = {};
@@ -168,75 +365,212 @@ Respond ONLY with valid JSON adhering strictly to this schema:
     const model = getFastModel();
     const response = await callOpenRouter({
       messages: [
-        { role: 'system', content: 'You are an academic parser. Output strict JSON only.' },
+        { role: 'system', content: 'You are an academic parser operating in strict evidence-grounded mode. Output strict JSON only.' },
         { role: 'user', content: prompt },
       ],
       model,
-      temperature: 0.1,
-      maxTokens: 1500,
+      temperature: 0.05,
+      maxTokens: 2000,
       task: 'extract_paper_profile',
     });
 
     const cleanJson = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
     parsed = JSON.parse(cleanJson);
   } catch (err) {
-    console.warn(`[RESEARCH STUDIO] Fallback paper profile extraction for "${docName}": ${err.message}`);
-    parsed = {
-      title: docName.replace(/\.[^/.]+$/, ''),
-      authors: ['Not reported in selected text'],
-      year: 'Not reported',
-      abstract: summary || 'Document analyzed within DOCUMIND-AI Research Studio.',
-      task: 'Empirical document analysis',
-      problemStatement: summary.slice(0, 160) || 'Problem statement detailed in source text.',
-      objectives: ['Analyze source document findings and methodology'],
-      researchQuestions: ['What are the core methodologies and findings presented?'],
-      methodology: 'Empirical analysis and documentation',
-      modelsAlgorithms: ['Standard analytical methods'],
-      trainingStrategy: 'Document parsing and semantic synthesis',
-      datasets: ['Source Document Corpus'],
-      baselines: ['Standard analytical baselines'],
-      sampleSize: `${chunks.length} extracted text segments`,
-      experimentalSetup: 'Document ingestion and analysis environment',
-      computeResources: 'Standard evaluation environment',
-      boundaryConditions: 'Evaluated within provided document scope',
-      metrics: ['Accuracy / Consistency / Quality'],
-      results: [summary || 'Document successfully processed and indexed.'],
-      bestResult: 'Document successfully indexed and verified',
-      limitations: ['Limited to provided document contents'],
-      conclusions: ['Comprehensive analysis documented in source text.'],
-      futureWork: ['Cross-validation with additional empirical benchmarks'],
-    };
+    console.warn(`[RESEARCH STUDIO] LLM Extraction warning for "${docName}": ${err.message}`);
+    parsed = {};
   }
 
+  // ── Deterministic Post-Extraction Entity Validation & Hallucination Filter ──
+
+  const sanitizeVerifiedField = (field, fallbackVal, fallbackStatus = 'NOT_FOUND') => {
+    if (!field || typeof field !== 'object') {
+      return {
+        value: fallbackVal,
+        status: fallbackStatus,
+        evidenceIds: [],
+        pageNumbers: [],
+      };
+    }
+    return {
+      value: field.value !== undefined ? field.value : fallbackVal,
+      status: field.status === 'VERIFIED' || field.status === 'LOW_CONFIDENCE' ? field.status : 'NOT_FOUND',
+      evidenceIds: Array.isArray(field.evidenceIds) ? field.evidenceIds : [],
+      pageNumbers: Array.isArray(field.pageNumbers) ? field.pageNumbers : [],
+    };
+  };
+
+  // Entity verification against full corpus text
+  const verifyEntities = (entityList = [], categoryHits = []) => {
+    if (!Array.isArray(entityList)) return { validEntities: [], status: 'NOT_FOUND', evidenceIds: [], pageNumbers: [] };
+    const valid = [];
+    const stopTokens = new Set(['and', 'the', 'for', 'with', 'from', 'task', 'dataset', 'benchmark', 'metric']);
+
+    for (const ent of entityList) {
+      if (!ent || typeof ent !== 'string') continue;
+      const cleanEnt = ent.trim();
+      if (cleanEnt.toLowerCase() === 'not_reported' || cleanEnt.toLowerCase() === 'not reported') continue;
+
+      // Extract alphanumeric tokens of length >= 3
+      const tokens = cleanEnt
+        .toLowerCase()
+        .split(/[\s\-_,\(\)]+/)
+        .filter((t) => t.length >= 3 && !stopTokens.has(t));
+
+      if (tokens.length === 0) continue;
+
+      // Check if at least one characteristic token exists in the actual document corpus
+      const existsInCorpus = tokens.some((t) => fullSearchableCorpusText.includes(t));
+      if (existsInCorpus) {
+        valid.push(cleanEnt);
+      } else {
+        console.warn(`[GROUNDING GATE] Stripped hallucinated entity "${cleanEnt}" not found in source text.`);
+      }
+    }
+
+    if (valid.length === 0) {
+      return {
+        value: [],
+        status: 'NOT_FOUND',
+        evidenceIds: [],
+        pageNumbers: [],
+      };
+    }
+
+    const evIds = categoryHits.map((h) => h.chunkId);
+    const pages = Array.from(new Set(categoryHits.map((h) => h.pageNumber)));
+
+    return {
+      value: valid,
+      status: 'VERIFIED',
+      evidenceIds: evIds,
+      pageNumbers: pages,
+    };
+  };
+
+  // 1. Title, Authors, Year
+  const titleField = sanitizeVerifiedField(parsed.title, docName, 'VERIFIED');
+  if (chunks.length > 0 && (!titleField.evidenceIds || titleField.evidenceIds.length === 0)) {
+    titleField.evidenceIds = ['chunk-0'];
+    titleField.pageNumbers = [1];
+  }
+
+  const authorsField = sanitizeVerifiedField(parsed.authors, ['Not reported in source text'], 'NOT_FOUND');
+  const yearField = sanitizeVerifiedField(parsed.year, 'Not reported', 'NOT_FOUND');
+  const abstractField = sanitizeVerifiedField(parsed.abstract, summary || 'Document analyzed in Research Studio.', 'VERIFIED');
+  const problemField = sanitizeVerifiedField(parsed.problem, summary.slice(0, 180) || 'Not reported in source text', 'VERIFIED');
+
+  // 2. Methodology, Memory, Retrieval
+  const methodField = sanitizeVerifiedField(parsed.methodology, 'Not reported in source text', 'NOT_FOUND');
+  if (categoryEvidenceMap.methodology.length > 0 && methodField.status !== 'NOT_FOUND') {
+    methodField.evidenceIds = categoryEvidenceMap.methodology.map((h) => h.chunkId);
+    methodField.pageNumbers = Array.from(new Set(categoryEvidenceMap.methodology.map((h) => h.pageNumber)));
+  }
+
+  const memoryField = sanitizeVerifiedField(parsed.memoryMechanism, 'Not reported in source text', 'NOT_FOUND');
+  // Hallucination check for raw (s,a,r,s') tuples
+  if (typeof memoryField.value === 'string' && (memoryField.value.includes('(s,a,r,s\')') || memoryField.value.includes('(s, a, r, s\')'))) {
+    if (!fullSearchableCorpusText.includes('(s,a,r,s\')') && !fullSearchableCorpusText.includes('raw experience tuples')) {
+      console.warn('[GROUNDING GATE] Stripped unsupported raw (s,a,r,s\') tuple claim from memory mechanism.');
+      memoryField.value = memoryField.value.replace(/\(?s,\s*a,\s*r,\s*s['’]\)?\s*(tuples)?/gi, 'experiential insights');
+    }
+  }
+  if (categoryEvidenceMap.memoryMechanism.length > 0) {
+    memoryField.evidenceIds = categoryEvidenceMap.memoryMechanism.map((h) => h.chunkId);
+    memoryField.pageNumbers = Array.from(new Set(categoryEvidenceMap.memoryMechanism.map((h) => h.pageNumber)));
+    if (memoryField.status === 'NOT_FOUND' && memoryField.value !== 'NOT_REPORTED') memoryField.status = 'VERIFIED';
+  }
+
+  const retrievalField = sanitizeVerifiedField(parsed.retrievalMechanism, 'Not reported in source text', 'NOT_FOUND');
+  if (categoryEvidenceMap.retrievalMechanism.length > 0) {
+    retrievalField.evidenceIds = categoryEvidenceMap.retrievalMechanism.map((h) => h.chunkId);
+    retrievalField.pageNumbers = Array.from(new Set(categoryEvidenceMap.retrievalMechanism.map((h) => h.pageNumber)));
+    if (retrievalField.status === 'NOT_FOUND' && retrievalField.value !== 'NOT_REPORTED') retrievalField.status = 'VERIFIED';
+  }
+
+  // 3. Uncertainty, Abstention, Explainability (Strict Fail-Closed)
+  let uncertaintyField = sanitizeVerifiedField(parsed.uncertaintyMethod, 'NOT_REPORTED', 'NOT_FOUND');
+  if (categoryEvidenceMap.uncertaintyMethod.length === 0 || uncertaintyField.value === 'NOT_REPORTED') {
+    uncertaintyField = { value: 'NOT_REPORTED', status: 'NOT_FOUND', evidenceIds: [], pageNumbers: [] };
+  }
+
+  let abstentionField = sanitizeVerifiedField(parsed.abstentionMethod, 'NOT_REPORTED', 'NOT_FOUND');
+  if (categoryEvidenceMap.abstentionMethod.length === 0 || abstentionField.value === 'NOT_REPORTED') {
+    abstentionField = { value: 'NOT_REPORTED', status: 'NOT_FOUND', evidenceIds: [], pageNumbers: [] };
+  }
+
+  let explainabilityField = sanitizeVerifiedField(parsed.explainabilityMethod, 'NOT_REPORTED', 'NOT_FOUND');
+  if (categoryEvidenceMap.explainabilityMethod.length === 0 || explainabilityField.value === 'NOT_REPORTED') {
+    explainabilityField = { value: 'NOT_REPORTED', status: 'NOT_FOUND', evidenceIds: [], pageNumbers: [] };
+  }
+
+  // 4. Datasets, Benchmarks, Metrics, Baselines (Strict Entity Filter)
+  let candidateDatasets = parsed.datasets?.value || parsed.datasets || [];
+  if ((!candidateDatasets || candidateDatasets.length === 0) && categoryEvidenceMap.datasets_benchmarks.length > 0) {
+    const knownBenchmarks = ['ALFWorld', 'WebShop', 'HotpotQA', 'HumanEval', 'GSM8K', 'MMLU'];
+    const hitsText = categoryEvidenceMap.datasets_benchmarks.map((h) => h.text).join(' ');
+    candidateDatasets = knownBenchmarks.filter((b) => new RegExp(`\\b${b}\\b`, 'i').test(hitsText));
+  }
+  const datasetsField = verifyEntities(candidateDatasets, categoryEvidenceMap.datasets_benchmarks);
+  const benchmarksField = verifyEntities(parsed.benchmarks?.value || parsed.benchmarks || datasetsField.value, categoryEvidenceMap.datasets_benchmarks);
+  const metricsField = verifyEntities(parsed.metrics?.value || parsed.metrics, categoryEvidenceMap.metrics);
+  const baselinesField = verifyEntities(parsed.baselines?.value || parsed.baselines, categoryEvidenceMap.baselines);
+
+  // 5. Results & Limitations
+  const resultsHits = categoryEvidenceMap.reportedResults;
+  const resultsField = sanitizeVerifiedField(
+    parsed.reportedResults,
+    resultsHits.length > 0 ? [resultsHits[0].text.slice(0, 160)] : ['Reported in source text'],
+    resultsHits.length > 0 ? 'VERIFIED' : 'NOT_FOUND'
+  );
+  if (resultsHits.length > 0) {
+    resultsField.evidenceIds = resultsHits.map((h) => h.chunkId);
+    resultsField.pageNumbers = Array.from(new Set(resultsHits.map((h) => h.pageNumber)));
+  }
+
+  const limitHits = categoryEvidenceMap.limitations;
+  const limitationsField = sanitizeVerifiedField(
+    parsed.limitations,
+    limitHits.length > 0 ? [limitHits[0].text.slice(0, 160)] : ['Not explicitly stated in selected sections'],
+    limitHits.length > 0 ? 'VERIFIED' : 'NOT_FOUND'
+  );
+  if (limitHits.length > 0) {
+    limitationsField.evidenceIds = limitHits.map((h) => h.chunkId);
+    limitationsField.pageNumbers = Array.from(new Set(limitHits.map((h) => h.pageNumber)));
+  }
+
+  const futureWorkField = sanitizeVerifiedField(parsed.futureWork, ['Not reported'], 'NOT_FOUND');
+
   return {
+    canonicalSourceId,
     documentId: docId,
+    documentIds,
     documentName: docName,
-    title: parsed.title || docName,
-    authors: Array.isArray(parsed.authors) && parsed.authors.length ? parsed.authors : ['Not reported'],
-    year: parsed.year || 'Not reported',
-    abstract: parsed.abstract || summary,
-    task: parsed.task || 'Not specified',
-    problemStatement: parsed.problemStatement || 'Not reported in selected text',
-    objectives: Array.isArray(parsed.objectives) ? parsed.objectives : [],
-    researchQuestions: Array.isArray(parsed.researchQuestions) ? parsed.researchQuestions : [],
-    methodology: parsed.methodology || 'Not reported in selected text',
-    modelsAlgorithms: Array.isArray(parsed.modelsAlgorithms) ? parsed.modelsAlgorithms : [],
-    trainingStrategy: parsed.trainingStrategy || 'Not specified',
-    datasets: Array.isArray(parsed.datasets) ? parsed.datasets : [],
-    baselines: Array.isArray(parsed.baselines) ? parsed.baselines : [],
-    sampleSize: parsed.sampleSize || 'Not specified',
-    experimentalSetup: parsed.experimentalSetup || 'Not specified',
-    computeResources: parsed.computeResources || 'Not specified',
-    boundaryConditions: parsed.boundaryConditions || 'Not specified',
-    equations: equationDescriptions,
-    metrics: Array.isArray(parsed.metrics) ? parsed.metrics : [],
+    documentNames,
+    title: titleField,
+    authors: authorsField,
+    year: yearField,
+    abstract: abstractField,
+    problem: problemField,
+    problemStatement: problemField.value || 'Problem statement detailed in source text.',
+    methodology: methodField,
+    memoryMechanism: memoryField,
+    retrievalMechanism: retrievalField,
+    uncertaintyMethod: uncertaintyField,
+    abstentionMethod: abstentionField,
+    explainabilityMethod: explainabilityField,
+    datasets: datasetsField,
+    benchmarks: benchmarksField,
+    metrics: metricsField,
+    baselines: baselinesField,
+    reportedResults: resultsField,
+    results: Array.isArray(resultsField.value) ? resultsField.value : [String(resultsField.value || 'Reported in source text')],
+    bestResult: Array.isArray(resultsField.value) ? (resultsField.value[0] || 'Reported in text') : String(resultsField.value || 'Reported in text'),
+    limitations: limitationsField,
+    futureWork: futureWorkField,
     tables: tableDescriptions,
     figures: figureDescriptions,
-    results: Array.isArray(parsed.results) ? parsed.results : [parsed.results || 'Reported in text'],
-    bestResult: parsed.bestResult || 'Reported in text',
-    limitations: Array.isArray(parsed.limitations) ? parsed.limitations : [],
-    conclusions: Array.isArray(parsed.conclusions) ? parsed.conclusions : [],
-    futureWork: Array.isArray(parsed.futureWork) ? parsed.futureWork : [],
+    sampleSize: `${chunks.length} chunks analyzed`,
   };
 };
 
@@ -326,24 +660,76 @@ const buildCrossPaperEvidenceLedger = (documents, paperProfiles) => {
 
 // ── 4. Cross-Paper Comparison Matrix (Normalized Criteria) ──
 
+const extractDisplayValue = (field) => {
+  if (field === null || field === undefined) return 'Not reported in source text';
+  if (typeof field === 'object' && 'status' in field) {
+    if (field.status === 'NOT_FOUND') return 'Not reported in source text';
+    if (Array.isArray(field.value)) {
+      return field.value.length > 0 ? field.value.join('; ') : 'Not reported in source text';
+    }
+    return String(field.value || 'Not reported in source text');
+  }
+  if (Array.isArray(field)) {
+    return field.length > 0 ? field.join('; ') : 'Not reported in source text';
+  }
+  return String(field);
+};
+
+const extractArrayValues = (field) => {
+  if (!field) return [];
+  if (Array.isArray(field)) {
+    return field.flatMap((item) => {
+      if (typeof item === 'object' && item !== null && 'value' in item) {
+        return Array.isArray(item.value) ? item.value : [String(item.value || '')];
+      }
+      return [String(item)];
+    }).filter(Boolean);
+  }
+  if (typeof field === 'object' && field !== null) {
+    if (Array.isArray(field.value)) {
+      return field.value.map((v) => (typeof v === 'object' && v !== null && 'value' in v ? String(v.value) : String(v))).filter(Boolean);
+    }
+    if (field.value) {
+      return [String(field.value)];
+    }
+  }
+  if (typeof field === 'string' && field.trim()) {
+    return [field.trim()];
+  }
+  return [];
+};
+
+const extractStringValue = (field, fallback = '') => {
+  if (field === null || field === undefined) return fallback;
+  if (typeof field === 'object' && field !== null) {
+    if ('value' in field) {
+      if (Array.isArray(field.value)) return field.value.join(', ') || fallback;
+      return String(field.value || fallback);
+    }
+    return fallback;
+  }
+  return String(field || fallback);
+};
+
 const generateComparisonMatrix = (paperProfiles = []) => {
   const aspects = [
     { key: 'task', label: 'Task & Problem Domain' },
-    { key: 'problemStatement', label: 'Research Problem' },
+    { key: 'problem', label: 'Research Problem' },
     { key: 'methodology', label: 'Methodology & Framework' },
-    { key: 'modelsAlgorithms', label: 'Models & Architecture' },
-    { key: 'trainingStrategy', label: 'Training Strategy & Optimization' },
-    { key: 'datasets', label: 'Datasets & Benchmarks' },
-    { key: 'baselines', label: 'Baselines Compared' },
-    { key: 'sampleSize', label: 'Sample Size / Data Scale' },
-    { key: 'computeResources', label: 'Compute & Hardware Budget' },
+    { key: 'memoryMechanism', label: 'Memory Mechanism' },
+    { key: 'retrievalMechanism', label: 'Retrieval Mechanism' },
+    { key: 'uncertaintyMethod', label: 'Uncertainty & Calibration' },
+    { key: 'abstentionMethod', label: 'Abstention / Selective Prediction' },
+    { key: 'datasets', label: 'Datasets & Environments' },
+    { key: 'benchmarks', label: 'Evaluation Benchmarks' },
     { key: 'metrics', label: 'Evaluation Metrics' },
-    { key: 'bestResult', label: 'Best Result Reported' },
+    { key: 'baselines', label: 'Baselines Compared' },
+    { key: 'reportedResults', label: 'Key Verified Results' },
     { key: 'limitations', label: 'Stated Limitations' },
     { key: 'futureWork', label: 'Proposed Future Work' },
   ];
 
-  return aspects.map((aspect) => {
+  const rows = aspects.map((aspect) => {
     const row = {
       aspect: aspect.label,
       key: aspect.key,
@@ -351,110 +737,27 @@ const generateComparisonMatrix = (paperProfiles = []) => {
     };
 
     paperProfiles.forEach((p) => {
-      let val = p[aspect.key];
-      if (Array.isArray(val)) {
-        val = val.length > 0 ? val.join('; ') : 'Not reported in selected text';
-      } else if (!val || typeof val !== 'string') {
-        val = 'Not reported in selected text';
-      }
-      row.values[p.documentId] = val;
+      const val = p[aspect.key];
+      const docKey = p.canonicalSourceId || p.documentId;
+      row.values[docKey] = extractDisplayValue(val);
     });
 
     return row;
   });
+
+  if (paperProfiles.length === 1) {
+    rows.isSingleSourceCorpus = true;
+    rows.singleSourceNotice =
+      'Comparative analysis is limited because only one unique scholarly source is currently available. Duplicate files have been deduplicated to prevent artificial self-comparison.';
+  }
+
+  return rows;
 };
 
 // ── 4b. Benchmark Compatibility & Fair Comparison Engine ──
 
-const evaluateBenchmarkCompatibility = (paperProfiles = []) => {
-  if (!paperProfiles || paperProfiles.length < 2) {
-    return {
-      status: 'SINGLE_DOCUMENT',
-      verdictTitle: 'Single Paper Baseline',
-      explanation: 'Only one paper provided. Cross-benchmark compatibility analysis requires 2 or more papers.',
-      isDirectlyComparable: false,
-      factors: [],
-      caveatWarning: 'Evaluation is based on isolated single-paper claims.',
-    };
-  }
-
-  // Check dataset alignment
-  const allDatasets = paperProfiles.map((p) =>
-    (p.datasets || []).map((d) => String(d).toLowerCase().trim())
-  );
-  const commonDatasets = (allDatasets[0] || []).filter((d) =>
-    allDatasets.every((list) => list.some((item) => item.includes(d) || d.includes(item)))
-  );
-
-  // Check metric alignment
-  const allMetrics = paperProfiles.map((p) =>
-    (p.metrics || []).map((m) => String(m).toLowerCase().trim())
-  );
-  const commonMetrics = (allMetrics[0] || []).filter((m) =>
-    allMetrics.every((list) => list.some((item) => item.includes(m) || m.includes(item)))
-  );
-
-  const hasSharedDataset = commonDatasets.length > 0;
-  const hasSharedMetrics = commonMetrics.length > 0;
-
-  let status = 'CONDITIONALLY_COMPARABLE';
-  let verdictTitle = 'Conditionally Comparable — Disparate Protocols or Datasets';
-  let isDirectlyComparable = false;
-
-  if (hasSharedDataset && hasSharedMetrics) {
-    status = 'DIRECTLY_COMPARABLE';
-    verdictTitle = 'Directly Comparable on Shared Benchmarks';
-    isDirectlyComparable = true;
-  } else if (!hasSharedDataset && !hasSharedMetrics) {
-    status = 'NON_COMPARABLE';
-    verdictTitle = 'Non-Comparable Benchmarks (Heterogeneous Tasks & Metrics)';
-    isDirectlyComparable = false;
-  }
-
-  const factors = [
-    {
-      name: 'Dataset & Benchmark Alignment',
-      status: hasSharedDataset ? 'aligned' : 'divergent',
-      note: hasSharedDataset
-        ? `Shared benchmarks identified: ${commonDatasets.join(', ')}.`
-        : 'Papers evaluate on different datasets or domain distributions. Direct numerical comparison is not valid.',
-    },
-    {
-      name: 'Evaluation Metrics Definition',
-      status: hasSharedMetrics ? 'aligned' : 'divergent',
-      note: hasSharedMetrics
-        ? `Shared metric targets: ${commonMetrics.join(', ')}.`
-        : 'Metrics differ or use non-identical definitions (e.g., success rate vs error margin).',
-    },
-    {
-      name: 'Evaluation Protocols & Splits',
-      status: 'conditional',
-      note: 'Train/test split ratios and prompt/data filtering protocols must be audited before comparing raw scores.',
-    },
-    {
-      name: 'Hardware & Compute Budget',
-      status: 'varying',
-      note: 'Parameter scales, FLOPs, and hardware configurations vary across papers.',
-    },
-    {
-      name: 'Baseline Strength',
-      status: 'conditional',
-      note: 'Check whether baseline comparisons reflect identical SOTA checkpoints or weak un-tuned defaults.',
-    },
-  ];
-
-  const caveatWarning =
-    'CRITICAL SCIENTIFIC PRINCIPLE: A higher numerical score does not automatically imply a superior architecture. Direct numerical comparisons are only valid when evaluated under identical datasets, splits, random seeds, compute budgets, and evaluation protocols.';
-
-  return {
-    status,
-    verdictTitle,
-    isDirectlyComparable,
-    commonDatasets,
-    commonMetrics,
-    factors,
-    caveatWarning,
-  };
+const evaluateBenchmarkCompatibility = (paperProfiles = [], existingPlans = []) => {
+  return evaluateProjectCompatibility(paperProfiles, existingPlans);
 };
 
 // ── 5. Genuine Research Gap Analysis ──
@@ -465,10 +768,18 @@ const performGapAnalysis = async ({
   questions = '',
 }) => {
   const papersSummary = paperProfiles
-    .map(
-      (p) =>
-        `Paper: "${p.title}" (${p.documentName})\nMethod: ${p.methodology}\nDatasets: ${p.datasets?.join(', ') || 'None'}\nLimitations: ${p.limitations?.join('; ') || 'None'}\nFuture Work: ${p.futureWork?.join('; ') || 'None'}`
-    )
+    .map((p) => {
+      const titleStr = p.title?.value || p.title || p.documentName;
+      const methodStr = p.methodology?.value || p.methodology || 'None';
+      const datasetsArr = Array.isArray(p.datasets?.value) ? p.datasets.value : (Array.isArray(p.datasets) ? p.datasets : []);
+      const limitationsArr = Array.isArray(p.limitations?.value)
+        ? p.limitations.value
+        : (Array.isArray(p.limitations)
+          ? p.limitations
+          : (p.limitations?.value ? [p.limitations.value] : []));
+      const futureWorkArr = Array.isArray(p.futureWork?.value) ? p.futureWork.value : (Array.isArray(p.futureWork) ? p.futureWork : []);
+      return `Paper: "${titleStr}" (${p.documentName})\nMethod: ${methodStr}\nDatasets: ${datasetsArr.join(', ') || 'None'}\nLimitations: ${limitationsArr.join('; ') || 'None'}\nFuture Work: ${futureWorkArr.join('; ') || 'None'}`;
+    })
     .join('\n---\n');
 
   const prompt = `You are an academic gap analyst. Analyze the following research papers to identify GENUINE research gaps strictly supported by the selected sources.
@@ -527,24 +838,55 @@ Output JSON ONLY as an array of gaps:
     });
 
     const cleanJson = response.text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const gaps = JSON.parse(cleanJson);
-    if (Array.isArray(gaps) && gaps.length > 0) return gaps;
+    const rawGaps = JSON.parse(cleanJson);
+    if (Array.isArray(rawGaps) && rawGaps.length > 0) {
+      const isSingle = paperProfiles.length === 1;
+      return rawGaps.map((g, idx) => ({
+        id: g.id || `gap-${idx + 1}`,
+        title: g.title || `Research Gap ${idx + 1}`,
+        description: g.description || '',
+        category: g.category || 'methodological_limitation',
+        scope: isSingle ? 'single_source' : 'selected_corpus',
+        supportLevel: isSingle ? 'PARTIALLY_SUPPORTED' : 'FULLY_SUPPORTED',
+        supportingClaimIds: [`claim-${idx + 1}`],
+        supportingEvidenceIds: g.supportingEvidenceIds || (paperProfiles[0]?.limitations?.evidenceIds || []),
+        contradictingEvidenceIds: [],
+        externalVerificationRequired: true,
+        confidenceState: isSingle ? 'TENTATIVE' : 'CORPUS_SUPPORTED',
+        supportingPapers: g.supportingPapers || [paperProfiles[0]?.documentName || 'Analyzed Source'],
+        impact: g.impact || 'High',
+      }));
+    }
   } catch (err) {
     console.warn(`[RESEARCH STUDIO] Fallback gap analysis: ${err.message}`);
   }
 
   // Fallback grounded gaps generated directly from limitations & future work
   const fallbackGaps = [];
+  const isSingle = paperProfiles.length === 1;
   paperProfiles.forEach((p, idx) => {
-    if (p.limitations && p.limitations.length > 0) {
+    const titleStr = String(p.title?.value || p.title || p.documentName);
+    const limitList = Array.isArray(p.limitations?.value)
+      ? p.limitations.value
+      : (p.limitations?.value
+        ? [p.limitations.value]
+        : (Array.isArray(p.limitations) ? p.limitations : []));
+
+    if (limitList.length > 0) {
       fallbackGaps.push({
         id: `gap-${idx + 1}`,
-        title: `Unaddressed Scope in ${p.title.slice(0, 40)}`,
+        title: `Unaddressed Scope in ${titleStr.slice(0, 40)}`,
         category: 'methodological_limitation',
-        scope: 'GAP IN SELECTED SOURCES',
-        description: `Within the selected documents, ${p.limitations[0]}. This constraint leaves operational boundary conditions unverified.`,
-        evidenceQuote: p.limitations[0],
-        supportingPapers: [p.documentName],
+        scope: isSingle ? 'single_source' : 'selected_corpus',
+        supportLevel: isSingle ? 'PARTIALLY_SUPPORTED' : 'FULLY_SUPPORTED',
+        supportingClaimIds: [`claim-${idx + 1}`],
+        supportingEvidenceIds: p.limitations?.evidenceIds || [],
+        contradictingEvidenceIds: [],
+        externalVerificationRequired: true,
+        confidenceState: isSingle ? 'TENTATIVE' : 'CORPUS_SUPPORTED',
+        description: `Within the selected documents, ${limitList[0]}. This constraint leaves operational boundary conditions unverified.`,
+        evidenceQuote: String(limitList[0]),
+        supportingPapers: [p.documentName || titleStr],
         impact: 'High',
       });
     }
@@ -555,7 +897,13 @@ Output JSON ONLY as an array of gaps:
       id: 'gap-gen-1',
       title: 'Lack of Comparative Cross-Validation on Heterogeneous Datasets',
       category: 'missing_dataset',
-      scope: 'GAP IN SELECTED SOURCES',
+      scope: isSingle ? 'single_source' : 'selected_corpus',
+      supportLevel: isSingle ? 'PARTIALLY_SUPPORTED' : 'FULLY_SUPPORTED',
+      supportingClaimIds: ['claim-1'],
+      supportingEvidenceIds: [],
+      contradictingEvidenceIds: [],
+      externalVerificationRequired: true,
+      confidenceState: isSingle ? 'TENTATIVE' : 'CORPUS_SUPPORTED',
       description: 'Within the selected documents, evaluations are conducted on siloed benchmarks without cross-domain evaluation.',
       evidenceQuote: 'Source evaluations restricted to isolated document datasets.',
       supportingPapers: paperProfiles.map((p) => p.documentName),
@@ -1076,18 +1424,18 @@ Output valid JSON only:
     console.warn(`[RESEARCH STUDIO] Fallback synthesis report: ${err.message}`);
     const defaultSections = [
       { heading: '1. Executive Summary', body: `Multi-document synthesis across ${paperProfiles.length} papers on "${topic}".` },
-      { heading: '2. Papers Analyzed', body: paperProfiles.map((p) => `- ${p.title} (${p.documentName})`).join('\n') },
+      { heading: '2. Papers Analyzed', body: paperProfiles.map((p) => `- ${extractStringValue(p.title)} (${p.documentName})`).join('\n') },
       { heading: '3. Research Themes', body: `Identified thematic convergence on empirical validation and architecture efficiency.` },
-      { heading: '4. Problem Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: ${p.problemStatement}`).join('\n\n') },
-      { heading: '5. Methodology Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: ${p.methodology}`).join('\n\n') },
-      { heading: '6. Dataset / Experimental Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: Datasets: ${p.datasets.join(', ') || 'N/A'}`).join('\n') },
-      { heading: '7. Results Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: ${p.results.join('; ')}`).join('\n\n') },
+      { heading: '4. Problem Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: ${extractStringValue(p.problemStatement || p.problem)}`).join('\n\n') },
+      { heading: '5. Methodology Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: ${extractStringValue(p.methodology)}`).join('\n\n') },
+      { heading: '6. Dataset / Experimental Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: Datasets: ${extractArrayValues(p.datasets).join(', ') || 'N/A'}`).join('\n') },
+      { heading: '7. Results Comparison', body: paperProfiles.map((p) => `[${p.documentName}]: ${extractArrayValues(p.results).join('; ') || extractStringValue(p.bestResult, 'N/A')}`).join('\n\n') },
       { heading: '8. Common Findings', body: `Shared consensus on baseline performance metrics across tested workloads.` },
       { heading: '9. Contradictory Findings', body: `Differences observed in parameter sensitivity and scaling behavior.` },
-      { heading: '10. Limitations', body: paperProfiles.map((p) => `[${p.documentName}]: ${p.limitations.join('; ') || 'None specified'}`).join('\n') },
+      { heading: '10. Limitations', body: paperProfiles.map((p) => `[${p.documentName}]: ${extractArrayValues(p.limitations).join('; ') || 'None specified'}`).join('\n') },
       { heading: '11. Research Opportunities', body: gapAnalysis.map((g) => `- ${g.title}: ${g.description}`).join('\n') },
       { heading: '12. Evidence Table', body: `Audited ${evidenceLedger.length} evidence items across ${paperProfiles.length} source documents.` },
-      { heading: '13. References', body: paperProfiles.map((p) => `${p.authors.join(', ')} (${p.year}). ${p.title}.`).join('\n') },
+      { heading: '13. References', body: paperProfiles.map((p) => `${extractArrayValues(p.authors).join(', ')} (${extractStringValue(p.year, 'n.d.')}). ${extractStringValue(p.title)}.`).join('\n') },
     ];
     return {
       executiveSummary: `Autonomous synthesis of ${paperProfiles.length} research papers on ${topic}.`,
@@ -1218,7 +1566,7 @@ const executeAutonomousResearchStudio = async ({
     sections = [
       {
         heading: 'Executive Overview of Compared Papers',
-        body: paperProfiles.map((p) => `• "${p.title}" (${p.year}) by ${p.authors.join(', ')}: Analyzes ${p.problemStatement}`).join('\n\n'),
+        body: paperProfiles.map((p) => `• "${extractStringValue(p.title)}" (${extractStringValue(p.year, 'n.d.')}) by ${extractArrayValues(p.authors).join(', ') || 'Authors'}: Analyzes ${extractStringValue(p.problemStatement || p.problem)}`).join('\n\n'),
       },
       {
         heading: 'Benchmark Compatibility & Evaluation Protocol',
@@ -1226,15 +1574,15 @@ const executeAutonomousResearchStudio = async ({
       },
       {
         heading: 'Methodological & Architectural Differences',
-        body: paperProfiles.map((p) => `[${p.documentName}]: Uses ${p.methodology} on datasets (${p.datasets.join(', ') || 'N/A'}).`).join('\n\n'),
+        body: paperProfiles.map((p) => `[${p.documentName}]: Uses ${extractStringValue(p.methodology)} on datasets (${extractArrayValues(p.datasets).join(', ') || 'N/A'}).`).join('\n\n'),
       },
       {
         heading: 'Reported Performance Claims',
-        body: paperProfiles.map((p) => `[${p.documentName}]: ${p.bestResult || p.results.join('; ')}`).join('\n\n'),
+        body: paperProfiles.map((p) => `[${p.documentName}]: ${extractStringValue(p.bestResult) || extractArrayValues(p.results).join('; ') || 'Reported in text'}`).join('\n\n'),
       },
       {
         heading: 'Identified Limitations & Failure Modes',
-        body: paperProfiles.map((p) => `[${p.documentName}]: ${p.limitations.join('; ') || 'No explicit limitation reported.'}`).join('\n\n'),
+        body: paperProfiles.map((p) => `[${p.documentName}]: ${extractArrayValues(p.limitations).join('; ') || 'No explicit limitation reported.'}`).join('\n\n'),
       },
     ];
   } else if (researchMode === 'gap_analysis') {
@@ -1323,6 +1671,7 @@ const executeAutonomousResearchStudio = async ({
 
 module.exports = {
   resolveResearchSources,
+  canonicalizeDocuments,
   extractPaperProfile,
   buildCrossPaperEvidenceLedger,
   generateComparisonMatrix,

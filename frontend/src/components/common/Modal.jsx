@@ -46,21 +46,21 @@ const Modal = ({
 
       {/* Dialog container */}
       <div
-        className={`relative w-full rounded-2xl bg-white shadow-2xl transition-all border border-slate-100 animate-in zoom-in-95 duration-200 ${
+        className={`relative w-full rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transition-all border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 ${
           sizeClasses[size] || sizeClasses.md
         } max-h-[90vh] flex flex-col`}
       >
         {/* Header */}
         {(title || showClose) && (
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4">
             <div>
-              {title && <h3 className="text-lg font-bold text-slate-900">{title}</h3>}
-              {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+              {title && <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>}
+              {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
             </div>
             {showClose && (
               <button
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
               >
                 <X size={20} />
               </button>

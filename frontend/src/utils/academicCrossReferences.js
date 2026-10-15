@@ -22,6 +22,12 @@ export function resolveManuscriptNumbering(manuscriptObjects = []) {
 
   return manuscriptObjects.map((obj) => {
     const updated = { ...obj };
+    if (updated.caption) {
+      updated.caption = String(updated.caption).replace(/^(Figure|Fig\.|Table|Eq\.|Equation)\s+\d+[\.:\s-]*/i, '').trim();
+    }
+    if (updated.title) {
+      updated.title = String(updated.title).replace(/^(Figure|Fig\.|Table|Eq\.|Equation)\s+\d+[\.:\s-]*/i, '').trim();
+    }
 
     if (obj.objectType === 'equation') {
       updated.equationNumber = eqCounter;

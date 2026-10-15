@@ -10,16 +10,36 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+// ─── In-Memory Cache for Instant Section Switching ────────────────────────
+let docsCache = null;
+let docsCacheTime = 0;
+const DOCS_CACHE_TTL_MS = 25000; // 25 seconds TTL
+
+export const invalidateDocumentsCache = () => {
+  docsCache = null;
+  docsCacheTime = 0;
+};
+
 // ─── Documents API ─────────────────────────────────────────────────────────
 
 /**
  * Fetch all documents for the authenticated user.
+ * Supports transparent in-memory caching so route transitions are instant (0ms).
+ * @param {boolean} forceRefresh - pass true to bypass cache
  */
-export const fetchDocuments = async () => {
+export const fetchDocuments = async (forceRefresh = false) => {
+  const now = Date.now();
+  if (!forceRefresh && docsCache && now - docsCacheTime < DOCS_CACHE_TTL_MS) {
+    return docsCache;
+  }
+
   const { data } = await axios.get(`${BASE_URL}/documents`, {
     headers: getAuthHeaders(),
   });
-  return data.documents || [];
+  const docs = data.documents || [];
+  docsCache = docs;
+  docsCacheTime = Date.now();
+  return docs;
 };
 
 /**
@@ -50,6 +70,12 @@ export const uploadDocument = async (file, knowledgeBase, knowledgeBaseId, onPro
       }
     },
   });
+
+  invalidateDocumentsCache();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('documind:refresh-counts'));
+  }
+
   return data.document;
 };
 
@@ -60,6 +86,12 @@ export const deleteDocument = async (documentId) => {
   const { data } = await axios.delete(`${BASE_URL}/documents/${documentId}`, {
     headers: getAuthHeaders(),
   });
+
+  invalidateDocumentsCache();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('documind:refresh-counts'));
+  }
+
   return data;
 };
 
@@ -70,6 +102,8 @@ export const reindexDocument = async (documentId) => {
   const { data } = await axios.post(`${BASE_URL}/documents/${documentId}/reindex`, {}, {
     headers: getAuthHeaders(),
   });
+
+  invalidateDocumentsCache();
   return data;
 };
 

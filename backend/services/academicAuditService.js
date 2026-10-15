@@ -17,7 +17,13 @@ function evaluateManuscriptQuality(project) {
   const hypotheses = project.hypotheses || [];
   const baselines = project.baselines || [];
   const userResults = project.userResults || [];
-  const verifiedResults = userResults.filter((r) => r.verified);
+  const verifiedResults = userResults.filter((r) => {
+    if (typeof r.value !== 'number' || isNaN(r.value) || !r.modelName) return false;
+    const status = String(r.verificationStatus || '').toUpperCase();
+    if (['EXAMPLE', 'DRAFT', 'USER_ENTERED', 'PROVENANCE_PENDING'].includes(status)) return false;
+    const hasRunIds = (Array.isArray(r.runIds) && r.runIds.length > 0) || Boolean(r.runId);
+    return status === 'VERIFIED_EXPERIMENT' && hasRunIds;
+  });
   const methodology = project.methodology || {};
   const discussion = project.discussion || {};
   const reproducibility = project.reproducibilityChecklist || {};
@@ -27,7 +33,10 @@ function evaluateManuscriptQuality(project) {
   // Dimension 1: Academic Integrity (Anti-Fabrication Gate)
   let integrityScore = 100;
   const isPreExperimental =
-    draft.manuscriptMode === 'pre_experimental' || draft.resultsPending || verifiedResults.length === 0;
+    draft.manuscriptMode === 'PRE_EXPERIMENTAL' ||
+    draft.manuscriptMode === 'pre_experimental' ||
+    draft.resultsPending ||
+    verifiedResults.length === 0;
 
   // Scan section text for ungrounded empirical claims
   const resultsSection = sections.find((s) => s.heading.toLowerCase().includes('result'));
@@ -40,6 +49,17 @@ function evaluateManuscriptQuality(project) {
         message: 'Draft contains empirical claims in Results section while zero verified experiments exist.',
       });
     }
+  }
+
+  // Scan for internal filename leaks in prose
+  const textAll = `${draft.abstract || ''} ${sections.map((s) => s.body || '').join(' ')}`;
+  if (/\b\d{4,5}-[A-Za-z0-9_.-]+(?:\s*\(\d+\))?\.pdf\b/i.test(textAll) || textAll.includes('01407-AAAI24')) {
+    integrityScore -= 20;
+    hardGateFailures.push({
+      dimension: 'Manuscript Consistency',
+      gate: 'internal_filename_leakage',
+      message: 'Manuscript contains raw internal filenames or parser IDs instead of canonical scholarly citations.',
+    });
   }
 
   // Dimension 2: Citation Completeness
@@ -197,13 +217,24 @@ function evaluateManuscriptQuality(project) {
     scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length
   );
 
+  const readinessDimensions = {
+    literatureIntegrity: litCount >= 4 ? 'STRONG' : litCount >= 2 ? 'ADEQUATE' : 'LIMITED',
+    methodologyReadiness: methScore >= 75 ? 'HIGH' : 'PARTIAL',
+    experimentalReadiness: verifiedResults.length > 0 ? 'VERIFIED' : 'NOT STARTED',
+    statisticalReadiness: verifiedResults.length >= 3 ? 'VALIDATED' : 'NOT STARTED',
+    citationIntegrity: citationScore >= 90 ? 'VERIFIED' : (citationScore >= 60 ? 'PARTIAL' : 'FAILED'),
+    manuscriptConsistency: hardGateFailures.some((f) => f.dimension === 'Manuscript Consistency') ? 'FAILED' : (formatScore >= 90 ? 'PASSED' : 'WARNINGS'),
+  };
+
   return {
     overallStatus,
+    stageLabel: isPreExperimental ? 'PRE-EXPERIMENTAL DRAFT' : (isPublicationReady ? 'PUBLICATION READY' : 'EMPIRICAL DRAFT (REVISIONS REQUIRED)'),
     overallScore,
     isPublicationReady,
     resultVerificationStatus,
     hardGateFailures,
     dimensions,
+    readinessDimensions,
     evaluatedAt: new Date().toISOString(),
   };
 }

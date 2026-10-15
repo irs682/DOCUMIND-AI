@@ -54,14 +54,14 @@ const ExtractionResults = () => {
     <div className="mx-auto max-w-5xl space-y-6 pb-12">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <Link to="/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600">
+          <Link to="/documents" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
             <ArrowLeft size={14} /> Back to documents
           </Link>
-          <div className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+          <div className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
             <FileText size={16} /> Information Extraction
           </div>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">Document findings</h1>
-          <p className="mt-1 text-sm text-slate-500">Structured findings grounded only in {documentName}.</p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Document findings</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Structured findings grounded only in {documentName}.</p>
         </div>
         <Button variant="outline" size="sm" leftIcon={RefreshCw} onClick={() => loadExtraction()} disabled={loading || isActive}>
           Refresh
@@ -69,12 +69,12 @@ const ExtractionResults = () => {
       </div>
 
       {loading && !extraction ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Loading extraction result...</div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-500 dark:text-slate-400">Loading extraction result...</div>
       ) : error && !extraction ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center">
-          <AlertCircle size={22} className="mx-auto text-rose-600" />
-          <h2 className="mt-3 text-sm font-bold text-rose-900">Unable to load extraction</h2>
-          <p className="mt-1 text-sm text-rose-700">{error}</p>
+        <div className="rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 p-6 text-center">
+          <AlertCircle size={22} className="mx-auto text-rose-600 dark:text-rose-400" />
+          <h2 className="mt-3 text-sm font-bold text-rose-900 dark:text-rose-200">Unable to load extraction</h2>
+          <p className="mt-1 text-sm text-rose-700 dark:text-rose-300">{error}</p>
           <Button className="mt-4" size="sm" onClick={() => loadExtraction()}>Try again</Button>
         </div>
       ) : extraction ? (
@@ -83,7 +83,7 @@ const ExtractionResults = () => {
           {status === 'FAILED' && <ExtractionProgress extraction={extraction} />}
           {status === 'COMPLETED' || hasResult ? <ExtractionResultsView extraction={extraction} /> : null}
           {error && (
-            <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
               The latest status update could not be retrieved. {error}
             </p>
           )}

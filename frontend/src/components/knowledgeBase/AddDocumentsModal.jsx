@@ -269,8 +269,8 @@ const AddDocumentsModal = ({
       <div className="space-y-5">
         {/* Destination Knowledge Base Selector (if multiple available) */}
         {allKnowledgeBases.length > 1 && (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               Destination Knowledge Base:
             </span>
             <select
@@ -281,7 +281,7 @@ const AddDocumentsModal = ({
                 const kb = allKnowledgeBases.find((k) => (k._id || k.id) === kbId);
                 if (kb) setSelectedKbName(kb.name);
               }}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-300"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-300"
             >
               {allKnowledgeBases.map((kb) => (
                 <option key={kb._id || kb.id} value={kb._id || kb.id}>
@@ -293,14 +293,14 @@ const AddDocumentsModal = ({
         )}
 
         {/* Tab Toggle */}
-        <div className="flex border-b border-slate-200">
+        <div className="flex border-b border-slate-200 dark:border-slate-800">
           <button
             type="button"
             onClick={() => setActiveTab('upload')}
             className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition ${
               activeTab === 'upload'
-                ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
             <Upload size={16} />
@@ -311,8 +311,8 @@ const AddDocumentsModal = ({
             onClick={() => setActiveTab('existing')}
             className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition ${
               activeTab === 'existing'
-                ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
             <FolderPlus size={16} />
@@ -331,8 +331,8 @@ const AddDocumentsModal = ({
               onDrop={handleDrop}
               className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition ${
                 dragActive
-                  ? 'border-purple-500 bg-purple-50/50 scale-[0.99]'
-                  : 'border-slate-300 bg-slate-50/40 hover:bg-slate-100/60'
+                  ? 'border-purple-500 dark:border-purple-500/60 bg-purple-50/50 dark:bg-purple-950/30 scale-[0.99]'
+                  : 'border-slate-300 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/60 hover:bg-slate-100/60 dark:hover:bg-slate-800/50'
               }`}
             >
               <input
@@ -347,15 +347,15 @@ const AddDocumentsModal = ({
                 className="hidden"
               />
 
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 mb-3 shadow-xs">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 mb-3 shadow-xs">
                 <Upload size={28} />
               </div>
 
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 Drag & drop files here to upload directly to{' '}
-                <span className="text-purple-600">{selectedKbName}</span>
+                <span className="text-purple-600 dark:text-purple-400">{selectedKbName}</span>
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Supports PDF, DOCX, PPTX, TXT, CSV, JSON (max 25MB)
               </p>
 
@@ -380,17 +380,17 @@ const AddDocumentsModal = ({
 
             {/* Selected File Card & Progress */}
             {selectedFile && (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
                       <FileText size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900 truncate max-w-sm">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate max-w-sm">
                         {selectedFile.name}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Destination: {selectedKbName}
                       </p>
                     </div>
@@ -402,7 +402,7 @@ const AddDocumentsModal = ({
                         setSelectedFile(null);
                         setUploadStatus(null);
                       }}
-                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200"
                     >
                       <X size={18} />
                     </button>
@@ -411,14 +411,14 @@ const AddDocumentsModal = ({
 
                 {uploading && (
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs text-slate-600 font-medium">
-                      <span className="flex items-center gap-1.5 text-purple-700">
+                    <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-medium">
+                      <span className="flex items-center gap-1.5 text-purple-700 dark:text-purple-400">
                         <Loader2 size={12} className="animate-spin" />
                         Uploading, running OCR & chunking into vector store...
                       </span>
                       <span>{uploadProgress}%</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                       <div
                         className="h-full bg-purple-600 transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
@@ -428,7 +428,7 @@ const AddDocumentsModal = ({
                 )}
 
                 {uploadStatus === 'success' && (
-                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-lg border border-emerald-200 dark:border-emerald-900/50">
                     <CheckCircle2 size={16} className="shrink-0" />
                     <span>
                       Document uploaded! Central pipeline (OCR, chunking, and Qdrant embeddings) has started.
@@ -437,7 +437,7 @@ const AddDocumentsModal = ({
                 )}
 
                 {uploadStatus === 'error' && (
-                  <div className="flex items-start gap-2 text-xs font-semibold text-rose-700 bg-rose-50 p-3 rounded-lg border border-rose-200">
+                  <div className="flex items-start gap-2 text-xs font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg border border-rose-200 dark:border-rose-900/50">
                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                     <span>{uploadError}</span>
                   </div>
@@ -476,9 +476,9 @@ const AddDocumentsModal = ({
         {/* ── TAB 2: SELECT EXISTING DOCUMENTS ── */}
         {activeTab === 'existing' && (
           <div className="space-y-4">
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               Link documents already present in your global platform library directly into{' '}
-              <strong className="text-purple-700">{selectedKbName}</strong> without re-uploading or duplicating vectors.
+              <strong className="text-purple-700 dark:text-purple-400">{selectedKbName}</strong> without re-uploading or duplicating vectors.
             </p>
 
             {/* Search Bar */}
@@ -509,7 +509,7 @@ const AddDocumentsModal = ({
 
             {/* Success message */}
             {existingSuccessMsg && (
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-lg border border-emerald-200 dark:border-emerald-900/50">
                 <CheckCircle2 size={16} />
                 <span>{existingSuccessMsg}</span>
               </div>
@@ -517,7 +517,7 @@ const AddDocumentsModal = ({
 
             {/* Error message */}
             {docsError && (
-              <div className="flex items-center gap-2 text-xs font-semibold text-rose-700 bg-rose-50 p-3 rounded-lg border border-rose-200">
+              <div className="flex items-center gap-2 text-xs font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg border border-rose-200 dark:border-rose-900/50">
                 <AlertCircle size={16} />
                 <span>{docsError}</span>
               </div>
@@ -526,17 +526,17 @@ const AddDocumentsModal = ({
             {/* Documents List */}
             {loadingDocs ? (
               <div className="flex flex-col items-center justify-center p-8 text-slate-400 gap-2">
-                <Loader2 size={24} className="animate-spin text-purple-600" />
+                <Loader2 size={24} className="animate-spin text-purple-600 dark:text-purple-400" />
                 <span className="text-xs">Loading document repository...</span>
               </div>
             ) : filteredDocs.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-xs text-slate-500 dark:text-slate-400">
                 {searchQuery
                   ? 'No documents matched your search query.'
                   : 'No documents found in your platform library. Use the "Upload New Files" tab above to add documents.'}
               </div>
             ) : (
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                 {filteredDocs.map((doc) => {
                   const docId = doc._id || doc.id;
                   const alreadyMember = isDocInKb(doc);
@@ -551,10 +551,10 @@ const AddDocumentsModal = ({
                       key={docId}
                       className={`flex items-center justify-between p-3.5 transition ${
                         alreadyMember
-                          ? 'bg-slate-50/60 opacity-70 cursor-not-allowed'
+                          ? 'bg-slate-50/60 dark:bg-slate-800/40 opacity-70 cursor-not-allowed'
                           : isChecked
-                          ? 'bg-purple-50/40 hover:bg-purple-50/60 cursor-pointer'
-                          : 'hover:bg-slate-50 cursor-pointer'
+                          ? 'bg-purple-50/40 dark:bg-purple-950/30 hover:bg-purple-50/60 dark:hover:bg-purple-950/50 cursor-pointer'
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer'
                       }`}
                       onClick={() => {
                         if (!alreadyMember) handleToggleDoc(docId);
@@ -568,23 +568,23 @@ const AddDocumentsModal = ({
                           onChange={() => {
                             if (!alreadyMember) handleToggleDoc(docId);
                           }}
-                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer disabled:cursor-not-allowed"
+                          className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-purple-600 focus:ring-purple-500 cursor-pointer disabled:cursor-not-allowed"
                         />
 
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shrink-0">
                           <FileText size={18} />
                         </div>
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="text-xs font-bold text-slate-900 truncate max-w-xs sm:max-w-md">
+                            <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-xs sm:max-w-md">
                               {doc.name || doc.originalName}
                             </p>
                             <Badge variant="slate" className="text-[10px] uppercase">
                               {docType}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                             <span>{doc.formattedSize || `${((doc.size || 0) / 1024).toFixed(1)} KB`}</span>
                             <span>•</span>
                             <span>{doc.chunksCount || 0} vectors</span>
@@ -610,8 +610,8 @@ const AddDocumentsModal = ({
             )}
 
             {/* Selection Summary and Add Selected Button */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <span className="text-xs text-slate-600">
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-xs text-slate-600 dark:text-slate-400">
                 <strong>{selectedDocIds.size}</strong> document(s) selected
               </span>
 

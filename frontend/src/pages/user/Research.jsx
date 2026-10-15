@@ -26,6 +26,13 @@ const Research = () => {
     ? parseInt(step, 10)
     : null;
 
+  // Redirect legacy /manuscript path directly to step 11 in the classic workspace
+  useEffect(() => {
+    if (isManuscriptRoute && projectId) {
+      navigate(`/research/projects/${projectId}/step/11`, { replace: true });
+    }
+  }, [isManuscriptRoute, projectId, navigate]);
+
   // Load user's projects list
   const loadProjects = useCallback(async () => {
     try {
@@ -71,11 +78,7 @@ const Research = () => {
           // If no specific step in URL, redirect cleanly to project.currentStep without history loops
           if (!step && !isManuscriptRoute) {
             const destStep = loadedProj.currentStep || 1;
-            if (destStep === 11) {
-              navigate(`/research/projects/${projectId}/manuscript`, { replace: true });
-            } else {
-              navigate(`/research/projects/${projectId}/step/${destStep}`, { replace: true });
-            }
+            navigate(`/research/projects/${projectId}/step/${destStep}`, { replace: true });
           }
         }
       } catch (err) {
@@ -109,29 +112,21 @@ const Research = () => {
     setError('');
     setActiveProject(project);
     const destStep = project.currentStep || 1;
-    if (destStep === 11) {
-      navigate(`/research/projects/${project._id}/manuscript`);
-    } else {
-      navigate(`/research/projects/${project._id}/step/${destStep}`);
-    }
+    navigate(`/research/projects/${project._id}/step/${destStep}`);
   };
 
   // Open manuscript directly (Section 23)
   const handleOpenManuscript = (project) => {
     setError('');
     setActiveProject(project);
-    navigate(`/research/projects/${project._id}/manuscript`);
+    navigate(`/research/projects/${project._id}/step/11`);
   };
 
   // Step change navigation (keeps route and state in perfect sync)
   const handleStepChange = (newStep) => {
     if (!activeProject) return;
     const projId = activeProject._id || activeProject.id;
-    if (newStep === 11) {
-      navigate(`/research/projects/${projId}/manuscript`);
-    } else {
-      navigate(`/research/projects/${projId}/step/${newStep}`);
-    }
+    navigate(`/research/projects/${projId}/step/${newStep}`);
   };
 
   // Back to All Projects
@@ -209,16 +204,16 @@ const Research = () => {
       {/* Top Bar Navigation: AI Research Workspace vs System Evaluation */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
             AI Research Workspace
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             From literature review to research gap, methodology, results, and full paper drafting.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 border border-slate-200">
+        <div className="flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700">
           <button
             type="button"
             onClick={() => {
@@ -226,8 +221,8 @@ const Research = () => {
             }}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
               activeTab === 'workspace'
-                ? 'bg-white text-indigo-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Sparkles size={14} />
@@ -238,8 +233,8 @@ const Research = () => {
             onClick={() => setActiveTab('evaluation')}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
               activeTab === 'evaluation'
-                ? 'bg-white text-indigo-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <BarChart3 size={14} />
@@ -249,8 +244,8 @@ const Research = () => {
       </div>
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          <AlertCircle size={18} className="shrink-0 text-rose-600" />
+        <div className="flex items-center gap-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 p-4 text-sm text-rose-700 dark:text-rose-300">
+          <AlertCircle size={18} className="shrink-0 text-rose-600 dark:text-rose-400" />
           <p>{error}</p>
         </div>
       )}
@@ -259,10 +254,10 @@ const Research = () => {
       {activeTab === 'workspace' && (
         <>
           {loadingProject ? (
-            <div className="p-16 text-center text-slate-500 rounded-2xl border border-slate-200 bg-white">
-              <Loader2 size={28} className="animate-spin mx-auto text-indigo-600 mb-3" />
+            <div className="p-16 text-center text-slate-500 dark:text-slate-400 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+              <Loader2 size={28} className="animate-spin mx-auto text-indigo-600 dark:text-indigo-400 mb-3" />
               <p className="text-sm font-medium">Restoring Research Project Workspace...</p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                 Loading saved literature, methodology, results, and draft state.
               </p>
             </div>

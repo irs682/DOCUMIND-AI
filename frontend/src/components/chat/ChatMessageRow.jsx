@@ -105,9 +105,9 @@ const ChatMessageRow = ({
           </div>
         ) : (
           /* Assistant Document-Style Flow */
-          <div className="text-slate-800 text-sm leading-relaxed select-text min-w-0 w-full">
+          <div className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed select-text min-w-0 w-full">
             {message.loading && !message.text ? (
-              <div className="flex items-center gap-2.5 text-slate-400 py-1.5 animate-pulse">
+              <div className="flex items-center gap-2.5 text-slate-400 dark:text-slate-500 py-1.5 animate-pulse">
                 <Sparkles size={16} className="animate-spin text-indigo-500 shrink-0" />
                 <span className="text-xs font-medium">
                   {message.phase || 'Analyzing document context & formulating answer…'}
@@ -125,9 +125,9 @@ const ChatMessageRow = ({
             <button
               type="button"
               onClick={onOpenContextPanel}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/70 hover:bg-indigo-100/70 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 transition cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 transition cursor-pointer shadow-2xs"
             >
-              <Layers size={12} className="text-indigo-600" />
+              <Layers size={12} className="text-indigo-600 dark:text-indigo-400" />
               <span>Grounded in {message.sources.length} document source{message.sources.length === 1 ? '' : 's'}</span>
               <span className="text-[10px] text-indigo-400 font-normal">→ view snippets</span>
             </button>
@@ -135,16 +135,16 @@ const ChatMessageRow = ({
         )}
 
         {/* Action Controls Bar */}
-        <div className={`flex items-center gap-2.5 text-[11px] text-slate-400 select-none pt-0.5 ${isUser ? 'justify-end' : ''}`}>
+        <div className={`flex items-center gap-2.5 text-[11px] text-slate-400 dark:text-slate-500 select-none pt-0.5 ${isUser ? 'justify-end' : ''}`}>
           <span>{message.timestamp}</span>
 
           {message.status === 'cancelled' && (
-            <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded font-medium">
+            <span className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-1.5 py-0.2 rounded font-medium">
               Stopped
             </span>
           )}
           {message.status === 'interrupted' && (
-            <span className="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded font-medium">
+            <span className="text-[10px] text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 px-1.5 py-0.2 rounded font-medium">
               Interrupted
             </span>
           )}
@@ -157,7 +157,7 @@ const ChatMessageRow = ({
                 setEditText(message.text);
                 setIsEditing(true);
               }}
-              className="inline-flex items-center gap-1 text-slate-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition cursor-pointer"
+              className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition cursor-pointer"
               title="Edit message"
             >
               <Pencil size={11} />
@@ -171,7 +171,7 @@ const ChatMessageRow = ({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition cursor-pointer"
                 title="Copy response"
               >
                 {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
@@ -185,7 +185,7 @@ const ChatMessageRow = ({
                   className={`inline-flex items-center gap-1 transition cursor-pointer ${
                     message.isBookmarked
                       ? 'text-amber-500 font-semibold'
-                      : 'text-slate-400 hover:text-amber-500'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-amber-500'
                   }`}
                   title={message.isBookmarked ? 'Bookmarked' : 'Save response'}
                 >
@@ -198,7 +198,7 @@ const ChatMessageRow = ({
                 <button
                   type="button"
                   onClick={() => onRegenerate(message.id)}
-                  className="inline-flex items-center gap-1 text-slate-400 hover:text-indigo-600 transition cursor-pointer"
+                  className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
                   title="Regenerate this response"
                 >
                   <RotateCcw size={12} />

@@ -50,10 +50,10 @@ const KnowledgeBaseCard = ({
   }, [menuOpen]);
 
   return (
-    <div className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-purple-300 hover:shadow-md flex flex-col justify-between">
+    <div className="group relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition-all hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md flex flex-col justify-between">
       <div>
         <div className="flex items-start justify-between gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 font-bold group-hover:bg-purple-600 group-hover:text-white transition-colors">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold group-hover:bg-purple-600 group-hover:text-white transition-colors">
             <Database size={24} />
           </div>
 
@@ -70,14 +70,14 @@ const KnowledgeBaseCard = ({
                   e.stopPropagation();
                   setMenuOpen((prev) => !prev);
                 }}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200 transition"
                 title="Options"
               >
                 <MoreVertical size={16} />
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 top-7 z-20 w-48 rounded-xl border border-slate-100 bg-white py-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute right-0 top-7 z-20 w-48 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 py-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-100">
                   {onAddDocuments && (
                     <button
                       type="button"
@@ -85,9 +85,9 @@ const KnowledgeBaseCard = ({
                         setMenuOpen(false);
                         onAddDocuments(knowledgeBase);
                       }}
-                      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-purple-50 hover:text-purple-700"
+                      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-300"
                     >
-                      <Plus size={14} className="text-purple-600" />
+                      <Plus size={14} className="text-purple-600 dark:text-purple-400" />
                       Add Documents
                     </button>
                   )}
@@ -99,9 +99,9 @@ const KnowledgeBaseCard = ({
                         setMenuOpen(false);
                         onViewDetails(knowledgeBase);
                       }}
-                      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                     >
-                      <FolderOpen size={14} className="text-slate-500" />
+                      <FolderOpen size={14} className="text-slate-500 dark:text-slate-400" />
                       Manage Documents
                     </button>
                   )}
@@ -113,22 +113,22 @@ const KnowledgeBaseCard = ({
                         setMenuOpen(false);
                         onEdit(knowledgeBase);
                       }}
-                      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                     >
-                      <Edit size={14} className="text-slate-500" />
+                      <Edit size={14} className="text-slate-500 dark:text-slate-400" />
                       Edit Knowledge Base
                     </button>
                   )}
 
                   {onDelete && (
-                    <div className="border-t border-slate-100 mt-1 pt-1">
+                    <div className="border-t border-slate-100 dark:border-slate-800 mt-1 pt-1">
                       <button
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
                           onDelete(knowledgeBase);
                         }}
-                        className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50"
+                        className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                       >
                         <Trash2 size={14} />
                         Delete Knowledge Base
@@ -144,30 +144,30 @@ const KnowledgeBaseCard = ({
         <div className="mt-4">
           <h4
             onClick={() => onViewDetails && onViewDetails(knowledgeBase)}
-            className="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors cursor-pointer"
+            className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors cursor-pointer"
           >
             {name}
           </h4>
-          <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-slate-100 space-y-3.5">
+      <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3.5">
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-600">
-            <FileText size={14} className="text-slate-400" />
-            <span className="font-semibold text-slate-900">{docCount}</span> docs
+          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+            <FileText size={14} className="text-slate-400 dark:text-slate-500" />
+            <span className="font-semibold text-slate-900 dark:text-white">{docCount}</span> docs
           </div>
-          <div className="flex items-center gap-1.5 text-slate-600">
-            <Layers size={14} className="text-slate-400" />
-            <span className="font-semibold text-purple-600">{vectorCount}</span> vectors
+          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+            <Layers size={14} className="text-slate-400 dark:text-slate-500" />
+            <span className="font-semibold text-purple-600 dark:text-purple-400">{vectorCount}</span> vectors
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs pt-1">
-          <span className="text-[11px] text-slate-400 font-mono truncate max-w-[130px]" title={embeddingModel}>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono truncate max-w-[130px]" title={embeddingModel}>
             {embeddingModel}
           </span>
 
@@ -176,7 +176,7 @@ const KnowledgeBaseCard = ({
               <button
                 type="button"
                 onClick={() => onAddDocuments(knowledgeBase)}
-                className="inline-flex items-center gap-1 rounded-lg border border-purple-200 bg-purple-50/70 px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition"
+                className="inline-flex items-center gap-1 rounded-lg border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/40 px-2.5 py-1 text-xs font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition"
               >
                 <Plus size={12} />
                 Add Documents
@@ -187,7 +187,7 @@ const KnowledgeBaseCard = ({
               <button
                 type="button"
                 onClick={() => onViewDetails(knowledgeBase)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:text-purple-800 transition"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 transition"
               >
                 Explore KB
                 <ArrowRight size={13} />

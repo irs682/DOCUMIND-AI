@@ -172,12 +172,12 @@ const KnowledgeBaseDetails = () => {
       <div className="space-y-4">
         <Link
           to="/knowledge-bases"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-purple-600 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
         >
           <ArrowLeft size={16} />
           Back to Knowledge Bases
         </Link>
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800">
+        <div className="rounded-2xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-6 text-sm text-rose-800 dark:text-rose-300">
           <p className="font-bold">Error Loading Knowledge Base</p>
           <p className="mt-1 text-xs">{error || 'Knowledge base not found.'}</p>
         </div>
@@ -198,7 +198,7 @@ const KnowledgeBaseDetails = () => {
       <div>
         <Link
           to="/knowledge-bases"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-purple-600 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
         >
           <ArrowLeft size={16} />
           Back to Knowledge Bases
@@ -207,26 +207,26 @@ const KnowledgeBaseDetails = () => {
 
       {/* Success banner */}
       {successNotice && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800 animate-in fade-in">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/30 p-3 text-xs font-semibold text-emerald-800 dark:text-emerald-300 animate-in fade-in">
           <CheckCircle2 size={16} className="shrink-0" />
           <span>{successNotice}</span>
         </div>
       )}
 
       {/* Knowledge Base Header Banner */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-md shrink-0">
             <Database size={28} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900">{kb.name}</h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{kb.name}</h1>
               <Badge variant={kb.isPrivate ? 'amber' : 'blue'} icon={kb.isPrivate ? Lock : Globe}>
                 {kb.isPrivate ? 'Private' : 'Team Shared'}
               </Badge>
             </div>
-            <p className="mt-1 text-xs text-slate-500 leading-relaxed max-w-xl">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
               {kb.description || 'Central vector store for domain-specific documents and evidence intelligence.'}
             </p>
           </div>
@@ -277,31 +277,31 @@ const KnowledgeBaseDetails = () => {
 
         {/* Right Column: Knowledge Base & Vector Index Overview */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Vector Index Overview
             </h4>
 
             <div className="space-y-3 text-xs">
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Embedding Model</span>
-                <span className="font-mono font-semibold text-slate-800">{kb.embeddingModel}</span>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Embedding Model</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">{kb.embeddingModel}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Vector Dimensions</span>
-                <span className="font-semibold text-slate-800">{vectorDim}d</span>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Vector Dimensions</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{vectorDim}d</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Assigned Documents</span>
-                <span className="font-bold text-slate-900">{documents.length}</span>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Assigned Documents</span>
+                <span className="font-bold text-slate-900 dark:text-white">{documents.length}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Total Vectors / Chunks</span>
-                <span className="font-bold text-purple-600">{kb.vectorCount || 0}</span>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Total Vectors / Chunks</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400">{kb.vectorCount || 0}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-slate-500">Last Synced</span>
-                <span className="text-slate-700">
+                <span className="text-slate-500 dark:text-slate-400">Last Synced</span>
+                <span className="text-slate-700 dark:text-slate-300">
                   {kb.updatedAt ? new Date(kb.updatedAt).toLocaleDateString() : 'Today'}
                 </span>
               </div>
@@ -309,11 +309,11 @@ const KnowledgeBaseDetails = () => {
           </div>
 
           {/* Quick Action Box */}
-          <div className="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50/70 to-indigo-50/30 p-5 space-y-3">
-            <h5 className="text-xs font-bold uppercase tracking-wider text-purple-900">
+          <div className="rounded-2xl border border-purple-100 dark:border-purple-900/50 bg-gradient-to-br from-purple-50/70 to-indigo-50/30 dark:from-purple-950/40 dark:to-indigo-950/30 p-5 space-y-3">
+            <h5 className="text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-200">
               RAG & Autonomous Research
             </h5>
-            <p className="text-xs text-purple-800/80 leading-relaxed">
+            <p className="text-xs text-purple-800/80 dark:text-purple-300/80 leading-relaxed">
               This Knowledge Base is directly selectable in Autonomous Research mode to isolate report generation to its evidence objects.
             </p>
             <div className="pt-1">
@@ -353,23 +353,23 @@ const KnowledgeBaseDetails = () => {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-slate-700 dark:text-slate-300">
             Are you sure you want to remove{' '}
-            <strong className="text-slate-900">{docToRemove?.name}</strong> from{' '}
-            <strong className="text-purple-700">{kb.name}</strong>?
+            <strong className="text-slate-900 dark:text-white">{docToRemove?.name}</strong> from{' '}
+            <strong className="text-purple-700 dark:text-purple-400">{kb.name}</strong>?
           </p>
 
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/70 p-3.5 text-xs text-indigo-900 flex items-start gap-2.5">
-            <FileText size={18} className="shrink-0 text-indigo-600 mt-0.5" />
+          <div className="rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/40 p-3.5 text-xs text-indigo-900 dark:text-indigo-200 flex items-start gap-2.5">
+            <FileText size={18} className="shrink-0 text-indigo-600 dark:text-indigo-400 mt-0.5" />
             <div>
               <p className="font-bold">Safe Detach Operation:</p>
-              <p className="mt-0.5 leading-relaxed text-indigo-800">
+              <p className="mt-0.5 leading-relaxed text-indigo-800 dark:text-indigo-300">
                 This document will <strong>NOT</strong> be deleted. It will remain in your global Documents library and in any other Knowledge Bases it belongs to.
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="outline" size="sm" onClick={() => setDocToRemove(null)}>
               Cancel
             </Button>
@@ -394,22 +394,22 @@ const KnowledgeBaseDetails = () => {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-slate-700 dark:text-slate-300">
             Are you sure you want to permanently delete{' '}
-            <strong className="text-slate-900">{docToDelete?.name}</strong>?
+            <strong className="text-slate-900 dark:text-white">{docToDelete?.name}</strong>?
           </p>
 
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-900 flex items-start gap-2.5">
-            <Trash2 size={18} className="shrink-0 text-rose-600 mt-0.5" />
+          <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 p-3.5 text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2.5">
+            <Trash2 size={18} className="shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
             <div>
               <p className="font-bold">Permanent Platform Deletion:</p>
-              <p className="mt-0.5 leading-relaxed text-rose-800">
+              <p className="mt-0.5 leading-relaxed text-rose-800 dark:text-rose-300">
                 This will delete the original file, its parsed text, tables, figures, OCR evidence, and vector embeddings in Qdrant across the entire platform. This action cannot be undone.
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="outline" size="sm" onClick={() => setDocToDelete(null)}>
               Cancel
             </Button>

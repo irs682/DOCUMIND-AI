@@ -35,9 +35,9 @@ const ProjectOverflowMenu = ({
           onClose();
           onNewChat(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 transition cursor-pointer text-slate-700"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-slate-700 dark:text-slate-200"
       >
-        <Plus size={13} className="text-indigo-600" />
+        <Plus size={13} className="text-indigo-600 dark:text-indigo-400" />
         <span>New chat</span>
       </button>
 
@@ -48,9 +48,9 @@ const ProjectOverflowMenu = ({
           onClose();
           onAddFiles(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 transition cursor-pointer text-slate-700"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-slate-700 dark:text-slate-200"
       >
-        <FilePlus size={13} className="text-slate-400" />
+        <FilePlus size={13} className="text-slate-400 dark:text-slate-500" />
         <span>Add files</span>
       </button>
 
@@ -61,9 +61,9 @@ const ProjectOverflowMenu = ({
           onClose();
           onRename(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 transition cursor-pointer text-slate-700"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-slate-700 dark:text-slate-200"
       >
-        <Pencil size={13} className="text-slate-400" />
+        <Pencil size={13} className="text-slate-400 dark:text-slate-500" />
         <span>Rename</span>
       </button>
 
@@ -74,9 +74,9 @@ const ProjectOverflowMenu = ({
           onClose();
           onTogglePin(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 transition cursor-pointer text-slate-700"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-slate-700 dark:text-slate-200"
       >
-        <Pin size={13} className={project.isPinned ? 'fill-amber-500 text-amber-500' : 'text-slate-400'} />
+        <Pin size={13} className={project.isPinned ? 'fill-amber-500 text-amber-500' : 'text-slate-400 dark:text-slate-500'} />
         <span>{project.isPinned ? 'Unpin project' : 'Pin project'}</span>
       </button>
 
@@ -87,14 +87,14 @@ const ProjectOverflowMenu = ({
           onClose();
           onOpenSettings(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 transition cursor-pointer text-slate-700"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-slate-700 dark:text-slate-200"
       >
-        <Settings size={13} className="text-slate-400" />
+        <Settings size={13} className="text-slate-400 dark:text-slate-500" />
         <span>Project settings</span>
       </button>
 
       {/* Divider */}
-      <div className="my-1 border-t border-slate-100" />
+      <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
 
       {/* Archive / Restore */}
       <button
@@ -103,16 +103,16 @@ const ProjectOverflowMenu = ({
           onClose();
           onToggleArchive(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 transition cursor-pointer text-slate-700"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-slate-700 dark:text-slate-200"
       >
         {project.status === 'archived' ? (
           <>
-            <ArchiveRestore size={13} className="text-slate-400" />
+            <ArchiveRestore size={13} className="text-slate-400 dark:text-slate-500" />
             <span>Restore project</span>
           </>
         ) : (
           <>
-            <Archive size={13} className="text-slate-400" />
+            <Archive size={13} className="text-slate-400 dark:text-slate-500" />
             <span>Archive project</span>
           </>
         )}
@@ -125,7 +125,7 @@ const ProjectOverflowMenu = ({
           onClose();
           onDelete(project);
         }}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
       >
         <Trash2 size={13} />
         <span>Delete project</span>

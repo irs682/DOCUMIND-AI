@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { documentApi } from '../../../services/documentApi';
 import api from '../../../services/api';
+import { safeString } from '../../../utils/safeRender';
 
 const Step1AddPapers = ({
   project,
@@ -384,7 +385,7 @@ const Step1AddPapers = ({
               const profile = profiles.find((p) => p.documentId === docId) || profiles[idx];
               const docObj = existingDocs.find((d) => d._id === docId);
               const displayName =
-                profile?.title || docObj?.title || docObj?.originalName || `Paper ${idx + 1}`;
+                safeString(profile?.title) || docObj?.title || docObj?.originalName || `Paper ${idx + 1}`;
 
               return (
                 <div
@@ -396,10 +397,10 @@ const Step1AddPapers = ({
                     <div className="space-y-1 min-w-0">
                       <p className="text-xs font-bold text-slate-900 truncate">{displayName}</p>
                       <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-                        {profile?.authors ? <span>{profile.authors}</span> : null}
-                        {profile?.year ? <span>({profile.year})</span> : null}
+                        {profile?.authors ? <span>{safeString(profile.authors)}</span> : null}
+                        {profile?.year ? <span>({safeString(profile.year)})</span> : null}
                         {profile?.venue ? (
-                          <span className="italic text-slate-400">• {profile.venue}</span>
+                          <span className="italic text-slate-400">• {safeString(profile.venue)}</span>
                         ) : null}
                         <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
                           Ready
@@ -407,7 +408,7 @@ const Step1AddPapers = ({
                       </div>
                       {profile?.problemStatement && (
                         <p className="text-[11px] text-slate-600 line-clamp-1 italic bg-slate-50 p-1.5 rounded">
-                          "{profile.problemStatement}"
+                          "{safeString(profile.problemStatement)}"
                         </p>
                       )}
                     </div>
@@ -446,25 +447,25 @@ const Step1AddPapers = ({
                 className="rounded-xl border border-indigo-100 bg-white p-3.5 space-y-2 text-xs"
               >
                 <p className="font-bold text-slate-900 truncate">
-                  {p.title || `Paper #${idx + 1}`}
+                  {safeString(p.title) || `Paper #${idx + 1}`}
                 </p>
                 <div className="text-[11px] text-slate-500 space-y-1">
                   <p>
                     <strong className="text-slate-700">Method:</strong>{' '}
-                    {p.methodology || p.modelArchitecture || 'Not specified'}
+                    {safeString(p.methodology) || safeString(p.modelArchitecture) || 'Not specified'}
                   </p>
                   <p>
                     <strong className="text-slate-700">Dataset/Metric:</strong>{' '}
-                    {p.dataset || 'Standard'} / {p.metrics || 'Accuracy'}
+                    {safeString(p.dataset, 'Standard')} / {safeString(p.metrics, 'Accuracy')}
                   </p>
                   {p.mainResults && (
                     <p>
-                      <strong className="text-slate-700">Best Result:</strong> {p.mainResults}
+                      <strong className="text-slate-700">Best Result:</strong> {safeString(p.mainResults)}
                     </p>
                   )}
                   {p.limitations && (
                     <p className="text-amber-800 bg-amber-50/80 p-1 rounded text-[10px]">
-                      <strong>Limitation:</strong> {p.limitations}
+                      <strong>Limitation:</strong> {safeString(p.limitations)}
                     </p>
                   )}
                 </div>

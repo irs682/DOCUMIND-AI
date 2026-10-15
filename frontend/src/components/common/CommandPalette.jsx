@@ -24,19 +24,19 @@ const CommandPalette = ({ isOpen, onClose, onOpenNewProject }) => {
 
   const commands = [
     {
-      id: 'new-project',
-      title: 'Start New Research Project',
-      category: 'Research Actions',
-      icon: Plus,
+      id: 'search-papers',
+      title: 'Search Academic Papers & Literature',
+      category: 'Research Discovery',
+      icon: Search,
       action: () => {
         onClose();
-        if (onOpenNewProject) onOpenNewProject();
+        navigate('/documents');
       },
     },
     {
-      id: 'open-workspace',
-      title: 'Open Research Workspace',
-      category: 'Research Actions',
+      id: 'open-project',
+      title: 'Open Active Study: MERA-VLA',
+      category: 'Projects',
       icon: Sparkles,
       action: () => {
         onClose();
@@ -44,8 +44,18 @@ const CommandPalette = ({ isOpen, onClose, onOpenNewProject }) => {
       },
     },
     {
+      id: 'new-project',
+      title: 'Create New Research Project',
+      category: 'Projects',
+      icon: Plus,
+      action: () => {
+        onClose();
+        if (onOpenNewProject) onOpenNewProject();
+      },
+    },
+    {
       id: 'upload-doc',
-      title: 'Upload Scholarly Documents',
+      title: 'Upload Papers & Datasets',
       category: 'Document Tools',
       icon: FileText,
       action: () => {
@@ -54,23 +64,43 @@ const CommandPalette = ({ isOpen, onClose, onOpenNewProject }) => {
       },
     },
     {
-      id: 'search-docs',
-      title: 'Semantic Document Search',
-      category: 'Document Tools',
-      icon: Search,
+      id: 'run-audit',
+      title: 'Run 19D Scholarly Quality Audit',
+      category: 'Integrity Gates',
+      icon: ShieldCheck,
       action: () => {
         onClose();
-        navigate('/search');
+        navigate('/research?action=audit');
       },
     },
     {
-      id: 'ai-chat',
-      title: 'AI Research Assistant Chat',
-      category: 'Intelligence',
-      icon: MessageSquare,
+      id: 'gen-manuscript',
+      title: 'Generate Academic Manuscript Draft',
+      category: 'Manuscript Studio',
+      icon: BookOpen,
       action: () => {
         onClose();
-        navigate('/chat');
+        navigate('/research?step=11');
+      },
+    },
+    {
+      id: 'export-pdf',
+      title: 'Export Camera-Ready PDF & LaTeX',
+      category: 'Manuscript Studio',
+      icon: Layers,
+      action: () => {
+        onClose();
+        navigate('/research?step=11&action=export');
+      },
+    },
+    {
+      id: 'figures-eqs',
+      title: 'Open Figure 3 & Equation Manager',
+      category: 'Figures & Math',
+      icon: Cpu,
+      action: () => {
+        onClose();
+        navigate('/research?step=11&tab=figures');
       },
     },
     {
@@ -84,23 +114,23 @@ const CommandPalette = ({ isOpen, onClose, onOpenNewProject }) => {
       },
     },
     {
+      id: 'ai-chat',
+      title: 'DOCUMIND Research Copilot Chat',
+      category: 'Intelligence',
+      icon: MessageSquare,
+      action: () => {
+        onClose();
+        navigate('/chat');
+      },
+    },
+    {
       id: 'knowledge-bases',
-      title: 'Browse Knowledge Bases',
-      category: 'Document Tools',
+      title: 'Browse Vector Knowledge Bases',
+      category: 'Knowledge Graph',
       icon: Database,
       action: () => {
         onClose();
         navigate('/knowledge-bases');
-      },
-    },
-    {
-      id: 'scientific-eval',
-      title: 'Scientific Evaluation & Benchmarks',
-      category: 'Research Actions',
-      icon: Cpu,
-      action: () => {
-        onClose();
-        navigate('/research?tab=evaluation');
       },
     },
   ];

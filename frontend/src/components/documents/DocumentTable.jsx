@@ -53,14 +53,14 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
     <div className="w-full space-y-3">
       {/* Bulk action header */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between rounded-xl bg-indigo-50 p-3 px-4 border border-indigo-100 text-xs font-semibold text-indigo-900">
+        <div className="flex items-center justify-between rounded-xl bg-indigo-50 dark:bg-indigo-950/60 p-3 px-4 border border-indigo-100 dark:border-indigo-900 text-xs font-semibold text-indigo-900 dark:text-indigo-200">
           <span>{selectedIds.length} document(s) selected</span>
           <button
             onClick={() => {
               if (onBulkDelete) onBulkDelete(selectedIds);
               setSelectedIds([]);
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-700 transition"
+            className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-700 transition cursor-pointer"
           >
             <Trash2 size={14} />
             Delete Selected
@@ -69,14 +69,14 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <table className="w-full text-left text-sm text-slate-600">
-          <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+          <thead className="bg-slate-50 dark:bg-slate-850 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th scope="col" className="p-4 w-10">
-                <button onClick={toggleSelectAll} className="text-slate-400 hover:text-slate-600">
+                <button onClick={toggleSelectAll} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                   {selectedIds.length === documents.length && documents.length > 0 ? (
-                    <CheckSquare size={18} className="text-indigo-600" />
+                    <CheckSquare size={18} className="text-indigo-600 dark:text-indigo-400" />
                   ) : (
                     <Square size={18} />
                   )}
@@ -85,7 +85,7 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
               <th scope="col" className="px-4 py-3.5 cursor-pointer" onClick={() => handleSort('name')}>
                 <div className="flex items-center gap-1.5">
                   Name
-                  <ArrowUpDown size={14} className="text-slate-400" />
+                  <ArrowUpDown size={14} className="text-slate-400 dark:text-slate-500" />
                 </div>
               </th>
               <th scope="col" className="px-4 py-3.5">Knowledge Base</th>
@@ -97,29 +97,29 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
               <th scope="col" className="px-4 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {sortedDocuments.map((doc) => {
               const isSelected = selectedIds.includes(doc.id);
               const canExtract = ['ready', 'indexed'].includes(String(doc.status || '').toLowerCase());
               return (
                 <tr
                   key={doc.id}
-                  className={`transition hover:bg-slate-50/80 ${
-                    isSelected ? 'bg-indigo-50/30' : ''
+                  className={`transition hover:bg-slate-50/80 dark:hover:bg-slate-800/50 ${
+                    isSelected ? 'bg-indigo-50/30 dark:bg-indigo-950/30' : ''
                   }`}
                 >
                   <td className="p-4">
-                    <button onClick={() => toggleSelectOne(doc.id)} className="text-slate-400 hover:text-slate-600">
+                    <button onClick={() => toggleSelectOne(doc.id)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                       {isSelected ? (
-                        <CheckSquare size={18} className="text-indigo-600" />
+                        <CheckSquare size={18} className="text-indigo-600 dark:text-indigo-400" />
                       ) : (
                         <Square size={18} />
                       )}
                     </button>
                   </td>
-                  <td className="px-4 py-3.5 font-semibold text-slate-900">
+                  <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
                         <FileText size={18} />
                       </div>
                       <span className="truncate max-w-xs" title={doc.name}>
@@ -127,37 +127,37 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 text-slate-500 font-medium">{doc.knowledgeBase || 'General'}</td>
+                  <td className="px-4 py-3.5 text-slate-500 dark:text-slate-400 font-medium">{doc.knowledgeBase || 'General'}</td>
                   <td className="px-4 py-3.5">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 border border-purple-200">
-                      <Sparkles size={11} className="text-purple-600 shrink-0" />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                      <Sparkles size={11} className="text-purple-600 dark:text-purple-400 shrink-0" />
                       <span>{doc.category || 'Other'}</span>
                       {doc.classificationConfidence && (
-                        <span className="text-[10px] text-purple-500 font-normal">
+                        <span className="text-[10px] text-purple-500 dark:text-purple-400 font-normal">
                           {Math.round(doc.classificationConfidence * 100)}%
                         </span>
                       )}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 text-slate-500">{doc.size || '1.2 MB'}</td>
+                  <td className="px-4 py-3.5 text-slate-500 dark:text-slate-400">{doc.size || '1.2 MB'}</td>
                   <td className="px-4 py-3.5">
                     <Badge variant={statusVariants[doc.status] || 'slate'}>
                       {doc.status ? doc.status.charAt(0).toUpperCase() + doc.status.slice(1) : 'Indexed'}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3.5 font-medium text-slate-700">
+                  <td className="px-4 py-3.5 font-medium text-slate-700 dark:text-slate-300">
                     <div className="flex items-center gap-1">
-                      <Layers size={14} className="text-slate-400" />
+                      <Layers size={14} className="text-slate-400 dark:text-slate-500" />
                       {doc.chunksCount || 12}
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 text-slate-500 text-xs">{doc.uploadedAt || 'Today'}</td>
+                  <td className="px-4 py-3.5 text-slate-500 dark:text-slate-400 text-xs">{doc.uploadedAt || 'Today'}</td>
                   <td className="px-4 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-1">
                       {onPreview && (
                         <button
                           onClick={() => onPreview(doc)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 transition"
+                          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
                           title="Preview Document"
                         >
                           <Eye size={16} />
@@ -167,7 +167,7 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
                         <button
                           disabled={!canExtract}
                           onClick={() => onExtract(doc)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition disabled:cursor-not-allowed disabled:opacity-40"
+                          className="rounded-lg p-1.5 text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                           title={canExtract ? 'Extract Information' : 'Available when document processing is complete'}
                         >
                           <Sparkles size={16} />
@@ -176,7 +176,7 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
                       {onDownload && (
                         <button
                           onClick={() => onDownload(doc)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-emerald-600 transition"
+                          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer"
                           title="Download"
                         >
                           <Download size={16} />
@@ -185,7 +185,7 @@ const DocumentTable = ({ documents = [], onPreview, onDelete, onDownload, onBulk
                       {onDelete && (
                         <button
                           onClick={() => onDelete(doc.id)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                          className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
                           title="Delete"
                         >
                           <Trash2 size={16} />

@@ -25,7 +25,28 @@ const {
   createManuscriptRevision,
   restoreManuscriptRevision,
   exportBibtex,
+  handleCopilotChat,
+  handleCopilotRewrite,
+  handleApplyRewrite,
+  handleLiveStatus,
+  handleStartAutonomousGeneration,
+  handleStreamEvents,
+  saveEvaluationPlan,
+  getEvaluationPlans,
+  addBenchmarkResult,
+  setComparisonStrategy,
+  getBenchmarkCatalogDetails,
 } = require('../controllers/researchProjectController');
+const {
+  getEvidenceReadiness,
+  planExperimentVariants,
+  ingestResults,
+  calculateExperimentStats,
+  validateSafety,
+  updateReproducibility,
+  verifyMathConsistency,
+  transitionManuscriptMode,
+} = require('../controllers/researchEvidenceController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -50,6 +71,31 @@ router.post('/projects/:id/reviewer-check', runReviewerCheck);
 router.post('/projects/:id/revisions', createManuscriptRevision);
 router.post('/projects/:id/revisions/:versionNumber/restore', restoreManuscriptRevision);
 router.get('/projects/:id/export/bibtex', exportBibtex);
+
+// ── Step 4 Canonical Benchmark Compatibility & Evaluation Plans ──
+router.post('/projects/:id/evaluation-plans', saveEvaluationPlan);
+router.get('/projects/:id/evaluation-plans', getEvaluationPlans);
+router.post('/projects/:id/benchmark-results', addBenchmarkResult);
+router.post('/projects/:id/comparison-strategy', setComparisonStrategy);
+router.get('/projects/:id/benchmark-details/:benchmarkKey', getBenchmarkCatalogDetails);
+
+// ── Research Evidence, Statistics, Safety & Reproducibility Pipeline ──
+router.get('/projects/:id/readiness', getEvidenceReadiness);
+router.post('/projects/:id/experiments/plan', planExperimentVariants);
+router.post('/projects/:id/experiments/ingest', ingestResults);
+router.post('/projects/:id/experiments/stats', calculateExperimentStats);
+router.post('/projects/:id/safety/validate', validateSafety);
+router.post('/projects/:id/reproducibility', updateReproducibility);
+router.post('/projects/:id/math/verify', verifyMathConsistency);
+router.post('/projects/:id/transition-mode', transitionManuscriptMode);
+
+// ── Research Copilot & Live Autonomous Generation ──
+router.post('/projects/:id/copilot/chat', handleCopilotChat);
+router.post('/projects/:id/copilot/rewrite', handleCopilotRewrite);
+router.post('/projects/:id/copilot/apply-rewrite', handleApplyRewrite);
+router.get('/projects/:id/copilot/live-status', handleLiveStatus);
+router.post('/projects/:id/copilot/generate-live', handleStartAutonomousGeneration);
+router.get('/projects/:id/copilot/events', handleStreamEvents);
 
 // ── Research Reports (Phase 7, SRS Section 29, 31) ──
 router.post('/generate', generateReport);
